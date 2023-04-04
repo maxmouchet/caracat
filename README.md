@@ -3,7 +3,6 @@
 [![crates.io](https://img.shields.io/crates/v/caracat?logo=rust)](https://crates.io/crates/caracat/)
 [![docs.rs](https://img.shields.io/docsrs/caracat?logo=docs.rs)](https://docs.rs/caracat/)
 [![test](https://img.shields.io/github/actions/workflow/status/maxmouchet/caracat/test.yml?logo=github&label=test)](https://github.com/maxmouchet/caracat/actions/workflows/test.yml)
-[![publish](https://img.shields.io/github/actions/workflow/status/maxmouchet/caracat/publish.yml?logo=github&label=publish)](https://github.com/maxmouchet/caracat/actions/workflows/publish.yml)
 
 caracat (always in lowercase) is a port of [caracal](https://github.com/dioptra-io/caracal/) from C++ to Rust.
 
