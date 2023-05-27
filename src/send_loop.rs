@@ -11,7 +11,7 @@ use crate::rate_limiter::RateLimiter;
 use crate::sender::Sender;
 use crate::tree::IpTree;
 
-pub struct Prober {
+pub struct SendLoop {
     batch_size: u64,
     caracat_id: u16,
     min_ttl: Option<u8>,
@@ -25,7 +25,7 @@ pub struct Prober {
     statistics: Arc<Mutex<ProberStatistics>>,
 }
 
-impl Prober {
+impl SendLoop {
     pub fn new(
         batch_size: u64,
         caracat_id: u16,
@@ -39,7 +39,7 @@ impl Prober {
         sender: Sender,
     ) -> Self {
         let statistics = Arc::new(Mutex::new(ProberStatistics::default()));
-        Prober {
+        SendLoop {
             batch_size,
             caracat_id,
             min_ttl,

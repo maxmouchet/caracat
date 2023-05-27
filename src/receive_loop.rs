@@ -18,13 +18,13 @@ use crate::utilities::{get_device, get_extension};
 
 // The pcap crate doesn't support `pcap_loop` and `pcap_breakloop`,
 // so we implement our own looping mechanism.
-pub struct Receiver {
+pub struct ReceiveLoop {
     handle: JoinHandle<()>,
     stopped: Arc<Mutex<bool>>,
     statistics: Arc<Mutex<ReceiverStatistics>>,
 }
 
-impl Receiver {
+impl ReceiveLoop {
     pub fn new(
         interface: String,
         output_file_csv: Option<PathBuf>,
@@ -156,7 +156,7 @@ impl Receiver {
                 o.flush().unwrap();
             }
         });
-        Receiver {
+        ReceiveLoop {
             handle,
             stopped,
             statistics,

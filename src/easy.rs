@@ -23,9 +23,9 @@ use rand::{thread_rng, Rng};
 
 use crate::logger::StatisticsLogger;
 use crate::models::Probe;
-use crate::prober::{Prober, ProberStatistics};
 use crate::rate_limiter::{RateLimiter, RateLimitingMethod};
-use crate::receiver::{Receiver, ReceiverStatistics};
+use crate::receive_loop::{ReceiveLoop, ReceiverStatistics};
+use crate::send_loop::{ProberStatistics, SendLoop};
 use crate::sender::Sender;
 use crate::tree::IpTree;
 use crate::utilities::get_default_interface;
@@ -54,7 +54,7 @@ pub fn probe<T: Iterator<Item = Probe>>(
     );
     let rate_statistics = rate_limiter.statistics().clone();
 
-    let receiver = Receiver::new(
+    let receiver = ReceiveLoop::new(
         config.interface.clone(),
         config.output_file_csv,
         config.output_file_pcap,
@@ -64,7 +64,7 @@ pub fn probe<T: Iterator<Item = Probe>>(
     );
     let receiver_statistics = receiver.statistics().clone();
 
-    let mut prober = Prober::new(
+    let mut prober = SendLoop::new(
         config.batch_size,
         config.caracat_id,
         config.min_ttl,
