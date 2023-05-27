@@ -198,12 +198,12 @@ impl Display for ReceiverStatistics {
         write!(f, " packets_received_invalid={}", self.received_invalid,)?;
         write!(
             f,
-            " icmp_distint_incl_dest={}",
+            " icmp_distinct_incl_dest={}",
             self.icmp_messages_incl_dest.len(),
         )?;
         write!(
             f,
-            " icmp_distint_excl_dest={}",
+            " icmp_distinct_excl_dest={}",
             self.icmp_messages_excl_dest.len(),
         )
     }
