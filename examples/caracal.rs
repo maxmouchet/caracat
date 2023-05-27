@@ -23,9 +23,6 @@ struct Args {
     /// File to which the captured replies will be written.
     #[arg(short = 'o', long)]
     output_file_csv: Option<PathBuf>,
-    /// File to which the captured replies will be written.
-    #[arg(long)]
-    output_file_pcap: Option<PathBuf>,
     /// Probing rate in packets per second.
     #[arg(short = 'r', long, default_value_t = 100)]
     probing_rate: u64,
@@ -106,7 +103,6 @@ fn main() -> Result<()> {
         interface: args.interface,
         max_probes: args.max_probes,
         output_file_csv: args.output_file_csv,
-        output_file_pcap: args.output_file_pcap,
         packets: args.packets,
         probing_rate: args.probing_rate,
         rate_limiting_method: args.rate_limiting_method,

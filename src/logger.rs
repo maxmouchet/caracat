@@ -7,8 +7,8 @@ use std::time::Duration;
 use log::info;
 
 use crate::rate_limiter::RateLimiterStatistics;
-use crate::receive_loop::ReceiverStatistics;
-use crate::send_loop::ProberStatistics;
+use crate::receive_loop::ReceiveStatistics;
+use crate::send_loop::SendStatistics;
 
 pub struct StatisticsLogger {
     handle: JoinHandle<()>,
@@ -17,9 +17,9 @@ pub struct StatisticsLogger {
 
 impl StatisticsLogger {
     pub fn new(
-        prober_statistics: Arc<Mutex<ProberStatistics>>,
+        prober_statistics: Arc<Mutex<SendStatistics>>,
         rate_statistics: Arc<Mutex<RateLimiterStatistics>>,
-        receiver_statistics: Arc<Mutex<ReceiverStatistics>>,
+        receiver_statistics: Arc<Mutex<ReceiveStatistics>>,
     ) -> Self {
         let stopped = Arc::new(Mutex::new(false));
         let stopped_thr = stopped.clone();

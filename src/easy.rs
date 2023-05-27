@@ -24,8 +24,8 @@ use rand::{thread_rng, Rng};
 use crate::logger::StatisticsLogger;
 use crate::models::Probe;
 use crate::rate_limiter::{RateLimiter, RateLimitingMethod};
-use crate::receive_loop::{ReceiveLoop, ReceiverStatistics};
-use crate::send_loop::{ProberStatistics, SendLoop};
+use crate::receive_loop::{ReceiveLoop, ReceiveStatistics};
+use crate::send_loop::{SendLoop, SendStatistics};
 use crate::sender::Sender;
 use crate::tree::IpTree;
 use crate::utilities::get_default_interface;
@@ -34,7 +34,7 @@ use crate::utilities::get_default_interface;
 pub fn probe<T: Iterator<Item = Probe>>(
     config: Config,
     probes: T,
-) -> Result<(ProberStatistics, ReceiverStatistics)> {
+) -> Result<(SendStatistics, ReceiveStatistics)> {
     info!("{}", config);
 
     let allowed_prefixes = match config.allowed_prefixes_file {
@@ -57,7 +57,6 @@ pub fn probe<T: Iterator<Item = Probe>>(
     let receiver = ReceiveLoop::new(
         config.interface.clone(),
         config.output_file_csv,
-        config.output_file_pcap,
         config.instance_id,
         config.extra_string,
         config.integrity_check,
@@ -98,7 +97,7 @@ pub fn probe<T: Iterator<Item = Probe>>(
 pub fn probe_from_csv<T: Read>(
     config: Config,
     input: T,
-) -> Result<(ProberStatistics, ReceiverStatistics)> {
+) -> Result<(SendStatistics, ReceiveStatistics)> {
     let mut reader = csv::ReaderBuilder::new()
         .comment(Some(b'#'))
         .flexible(true)
@@ -142,8 +141,6 @@ pub struct Config {
     pub max_probes: Option<u64>,
     /// File to which the captured replies will be written.
     pub output_file_csv: Option<PathBuf>,
-    /// File to which the captured replies will be written.
-    pub output_file_pcap: Option<PathBuf>,
     /// Number of packets to send per probe.
     pub packets: u64,
     /// Probing rate in packets per second.
@@ -169,7 +166,6 @@ impl Default for Config {
             interface: get_default_interface(),
             max_probes: None,
             output_file_csv: None,
-            output_file_pcap: None,
             packets: 1,
             probing_rate: 100,
             rate_limiting_method: RateLimitingMethod::Auto,
@@ -192,7 +188,6 @@ impl Display for Config {
         write!(f, " interface={:?}", self.interface)?;
         write!(f, " max_probes={:?}", self.max_probes)?;
         write!(f, " output_file_csv={:?}", self.output_file_csv)?;
-        write!(f, " output_file_pcap={:?}", self.output_file_pcap)?;
         write!(f, " packets={:?}", self.packets)?;
         write!(f, " probing_rate={:?}", self.probing_rate)?;
         write!(f, " rate_limiting_method={:?}", self.rate_limiting_method)?;

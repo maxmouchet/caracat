@@ -22,7 +22,7 @@ pub struct SendLoop {
     blocked_prefixes: Option<IpTree>,
     rate_limiter: RateLimiter,
     sender: Sender,
-    statistics: Arc<Mutex<ProberStatistics>>,
+    statistics: Arc<Mutex<SendStatistics>>,
 }
 
 impl SendLoop {
@@ -38,7 +38,7 @@ impl SendLoop {
         rate_limiter: RateLimiter,
         sender: Sender,
     ) -> Self {
-        let statistics = Arc::new(Mutex::new(ProberStatistics::default()));
+        let statistics = Arc::new(Mutex::new(SendStatistics::default()));
         SendLoop {
             batch_size,
             instance_id,
@@ -126,13 +126,13 @@ impl SendLoop {
         Ok(())
     }
 
-    pub fn statistics(&self) -> &Arc<Mutex<ProberStatistics>> {
+    pub fn statistics(&self) -> &Arc<Mutex<SendStatistics>> {
         &self.statistics
     }
 }
 
 #[derive(Copy, Clone, Default, Debug)]
-pub struct ProberStatistics {
+pub struct SendStatistics {
     pub read: u64,
     pub sent: u64,
     pub failed: u64,
@@ -142,7 +142,7 @@ pub struct ProberStatistics {
     pub filtered_prefix_not_allowed: u64,
 }
 
-impl Display for ProberStatistics {
+impl Display for SendStatistics {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "probes_read={} packets_sent={} packets_failed={} filtered_low_ttl={} filtered_high_ttl={} filtered_prefix_not_allowed={} filtered_prefix_blocked={}",
                self.read, self.sent, self.failed, self.filtered_low_ttl, self.filtered_high_ttl,self.filtered_prefix_not_allowed, self.filtered_prefix_blocked)

@@ -9,6 +9,7 @@ pub mod neighbors;
 pub mod parser;
 pub mod rate_limiter;
 pub mod receive_loop;
+pub mod receiver;
 pub mod send_loop;
 pub mod sender;
 pub mod timestamp;
