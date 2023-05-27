@@ -47,11 +47,11 @@ impl Probe {
         self.protocol
     }
 
-    pub fn checksum(&self, caracat_id: u16) -> u16 {
+    pub fn checksum(&self, instance_id: u16) -> u16 {
         // TODO: IPv6 support? Or just encode the last 32 bits for IPv6?
         let dst_addr_bytes: [u8; 4] = self.dst_addr.octets()[12..].try_into().unwrap();
         let dst_addr = u32::from_le_bytes(dst_addr_bytes);
-        caracat_checksum(caracat_id, dst_addr, self.src_port, self.ttl)
+        caracat_checksum(instance_id, dst_addr, self.src_port, self.ttl)
     }
 }
 

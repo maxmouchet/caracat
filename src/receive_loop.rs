@@ -29,7 +29,7 @@ impl ReceiveLoop {
         interface: String,
         output_file_csv: Option<PathBuf>,
         output_file_pcap: Option<PathBuf>,
-        caracat_id: u16,
+        instance_id: u16,
         extra_string: Option<String>,
         integrity_check: bool,
     ) -> Self {
@@ -108,7 +108,7 @@ impl ReceiveLoop {
                         match parse(&packet, linktype) {
                             // TODO: Avoid mut reply here?
                             Ok(mut reply) => {
-                                if integrity_check && reply.is_valid(caracat_id) {
+                                if integrity_check && reply.is_valid(instance_id) {
                                     trace!("{}", reply);
                                     statistics
                                         .icmp_messages_incl_dest

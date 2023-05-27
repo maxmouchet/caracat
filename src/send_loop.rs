@@ -13,7 +13,7 @@ use crate::tree::IpTree;
 
 pub struct SendLoop {
     batch_size: u64,
-    caracat_id: u16,
+    instance_id: u16,
     min_ttl: Option<u8>,
     max_ttl: Option<u8>,
     max_probes: Option<u64>,
@@ -28,7 +28,7 @@ pub struct SendLoop {
 impl SendLoop {
     pub fn new(
         batch_size: u64,
-        caracat_id: u16,
+        instance_id: u16,
         min_ttl: Option<u8>,
         max_ttl: Option<u8>,
         max_probes: Option<u64>,
@@ -41,7 +41,7 @@ impl SendLoop {
         let statistics = Arc::new(Mutex::new(ProberStatistics::default()));
         SendLoop {
             batch_size,
-            caracat_id,
+            instance_id,
             min_ttl,
             max_ttl,
             max_probes,
@@ -95,7 +95,7 @@ impl SendLoop {
                 trace!(
                     "{} id={} packet={}",
                     probe,
-                    probe.checksum(self.caracat_id),
+                    probe.checksum(self.instance_id),
                     i + 1
                 );
                 match self.sender.send(&probe) {

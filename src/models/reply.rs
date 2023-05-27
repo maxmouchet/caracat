@@ -132,14 +132,14 @@ impl Display for Reply {
 }
 
 impl Reply {
-    pub fn checksum(&self, caracat_id: u16) -> u16 {
+    pub fn checksum(&self, instance_id: u16) -> u16 {
         // TODO: IPv6 support? Or just encode the last 32 bits for IPv6?
         let dst_addr_bytes: [u8; 4] = self.probe_dst_addr.octets()[12..].try_into().unwrap();
         let dst_addr = u32::from_le_bytes(dst_addr_bytes);
-        caracat_checksum(caracat_id, dst_addr, self.probe_src_port, self.probe_ttl)
+        caracat_checksum(instance_id, dst_addr, self.probe_src_port, self.probe_ttl)
     }
 
-    pub fn is_valid(&self, caracat_id: u16) -> bool {
+    pub fn is_valid(&self, instance_id: u16) -> bool {
         // Currently, we only validate IPv4 ICMP time exceeded and destination
         // unreachable messages. We cannot validate echo replies as they do not
         // contain the probe_id field contained in the source IP header.
@@ -148,7 +148,7 @@ impl Reply {
             && (self.reply_icmp_type == icmp::IcmpTypes::DestinationUnreachable.0
                 || self.reply_icmp_type == icmp::IcmpTypes::TimeExceeded.0)
         {
-            self.probe_id == self.checksum(caracat_id)
+            self.probe_id == self.checksum(instance_id)
         } else {
             true
         }

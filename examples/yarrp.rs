@@ -244,7 +244,7 @@ fn main() -> Result<()> {
     let config = Config {
         allowed_prefixes_file: args.bgp,
         blocked_prefixes_file: args.blocklist,
-        caracat_id: args.instance,
+        instance_id: args.instance,
         dry_run: args.test,
         min_ttl: Some(args.minttl),
         max_ttl: Some(args.maxttl),

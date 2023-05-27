@@ -58,7 +58,7 @@ pub fn probe<T: Iterator<Item = Probe>>(
         config.interface.clone(),
         config.output_file_csv,
         config.output_file_pcap,
-        config.caracat_id,
+        config.instance_id,
         config.extra_string,
         config.integrity_check,
     );
@@ -66,7 +66,7 @@ pub fn probe<T: Iterator<Item = Probe>>(
 
     let mut prober = SendLoop::new(
         config.batch_size,
-        config.caracat_id,
+        config.instance_id,
         config.min_ttl,
         config.max_ttl,
         config.max_probes,
@@ -74,7 +74,7 @@ pub fn probe<T: Iterator<Item = Probe>>(
         allowed_prefixes,
         blocked_prefixes,
         rate_limiter,
-        Sender::new(&config.interface, config.caracat_id, config.dry_run)?,
+        Sender::new(&config.interface, config.instance_id, config.dry_run)?,
     );
     let prober_statistics = prober.statistics().clone();
 
@@ -125,7 +125,7 @@ pub struct Config {
     /// Number of probes to send before calling the rate limiter.
     pub batch_size: u64,
     /// Identifier encoded in the probes (random by default).
-    pub caracat_id: u16,
+    pub instance_id: u16,
     /// Whether to actually send the probes on the network or not.
     pub dry_run: bool,
     /// Extra column in the CSV output.
@@ -160,7 +160,7 @@ impl Default for Config {
             allowed_prefixes_file: None,
             blocked_prefixes_file: None,
             batch_size: 128,
-            caracat_id: thread_rng().gen_range(0..u16::MAX),
+            instance_id: thread_rng().gen_range(0..u16::MAX),
             dry_run: false,
             extra_string: None,
             min_ttl: None,
@@ -183,7 +183,7 @@ impl Display for Config {
         write!(f, "allowed_prefixes_file={:?}", self.allowed_prefixes_file)?;
         write!(f, " blocked_prefixes_file={:?}", self.blocked_prefixes_file)?;
         write!(f, " batch_size={:?}", self.batch_size)?;
-        write!(f, " caracat_id={:?}", self.caracat_id)?;
+        write!(f, " instance_id={:?}", self.instance_id)?;
         write!(f, " dry_run={:?}", self.dry_run)?;
         write!(f, " extra_string={:?}", self.extra_string)?;
         write!(f, " min_ttl={:?}", self.min_ttl)?;

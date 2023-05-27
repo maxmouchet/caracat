@@ -21,7 +21,7 @@ pub struct Sender {
     buffer: [u8; 65536],
     dry_run: bool,
     handle: Capture<Active>,
-    caracat_id: u16,
+    instance_id: u16,
     l2_protocol: L2,
     src_mac: MacAddr,
     dst_mac: MacAddr,
@@ -32,7 +32,7 @@ pub struct Sender {
 impl Sender {
     // TODO: Parameter for gateway resolution address.
     //       Accept gateway MAC address and do resolution upstream?
-    pub fn new(interface: &str, caracat_id: u16, dry_run: bool) -> Result<Self> {
+    pub fn new(interface: &str, instance_id: u16, dry_run: bool) -> Result<Self> {
         let device = get_device(interface).context("Device not found")?;
 
         let handle = pcap::Capture::from_device(device.clone())?
@@ -80,7 +80,7 @@ impl Sender {
             buffer: [0u8; 65536],
             dry_run,
             handle,
-            caracat_id,
+            instance_id,
             l2_protocol,
             src_mac,
             dst_mac,
@@ -120,7 +120,7 @@ impl Sender {
                 self.src_ip_v4,
                 probe.dst_addr.to_ipv4_mapped().unwrap(),
                 probe.ttl,
-                probe.checksum(self.caracat_id),
+                probe.checksum(self.instance_id),
             ),
             L3::IPv6 => build_ipv6(&mut packet, self.src_ip_v6, probe.dst_addr, probe.ttl),
         }

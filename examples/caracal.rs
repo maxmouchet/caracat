@@ -64,7 +64,7 @@ struct Args {
     max_ttl: Option<u8>,
     /// Identifier encoded in the probes (random by default).
     #[arg(long, default_value_t = thread_rng().gen_range(0..u16::MAX))]
-    caracat_id: u16,
+    instance_id: u16,
     /// Extra column in the CSV output.
     #[arg(long)]
     extra_string: Option<String>,
@@ -97,7 +97,7 @@ fn main() -> Result<()> {
         allowed_prefixes_file: args.allowed_prefixes_file,
         blocked_prefixes_file: args.blocked_prefixes_file,
         batch_size: args.batch_size,
-        caracat_id: args.caracat_id,
+        instance_id: args.instance_id,
         dry_run: args.dry_run,
         extra_string: args.extra_string,
         min_ttl: args.min_ttl,
