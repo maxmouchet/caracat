@@ -90,6 +90,21 @@ pub fn parse_as_ipv6(s: &str) -> Result<Ipv6Addr, AddrParseError> {
     }
 }
 
+// TODO: Use IpAddr everywhere and remove these methods.
+pub fn ip_to_ipv6(addr: IpAddr) -> Ipv6Addr {
+    match addr {
+        IpAddr::V4(ipv4) => ipv4.to_ipv6_mapped(),
+        IpAddr::V6(ipv6) => ipv6,
+    }
+}
+
+pub fn ipv6_to_ip(addr: Ipv6Addr) -> IpAddr {
+    match addr.to_ipv4_mapped() {
+        Some(ipv4) => IpAddr::V4(ipv4),
+        None => IpAddr::V6(addr),
+    }
+}
+
 /// Exit the whole process when a thread panic.
 /// This is in until we find a better way to handle errors in the receive loop.
 pub fn exit_process_on_panic() {

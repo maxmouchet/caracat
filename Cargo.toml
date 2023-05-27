@@ -34,8 +34,12 @@ zstd = "0.12.3"
 # These crates are only needed for running the examples.
 clap = { version = "4.3.0", features = ["derive"] }
 dns-lookup = "2.0.2"
+irrc = "0.1.0-rc.5"
+lazy_static = "1.4.0"
 libm = "0.2.7"
 permutation_iterator = "0.1.2"
+regex = "1.8.3"
+rpsl = "0.1.0-rc.1"
 
 [features]
 # Build zstd by using host libraries instead of the sources bundled with the zstd crate.
