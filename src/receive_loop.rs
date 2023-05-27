@@ -1,5 +1,6 @@
 //! High-level interface for capturing replies.
-use std::collections::HashSet;
+use hyperloglog::HyperLogLog;
+use std::collections::hash_map::RandomState;
 use std::fmt::{Display, Formatter};
 use std::fs::File;
 use std::io::{stdout, BufWriter, Write};
@@ -112,11 +113,11 @@ impl ReceiveLoop {
                                     trace!("{}", reply);
                                     statistics
                                         .icmp_messages_incl_dest
-                                        .insert(reply.reply_src_addr);
+                                        .insert(&reply.reply_src_addr);
                                     if reply.is_time_exceeded() {
                                         statistics
                                             .icmp_messages_excl_dest
-                                            .insert(reply.reply_src_addr);
+                                            .insert(&reply.reply_src_addr);
                                     }
                                     reply.extra = extra_string.clone();
                                     csv_writer.serialize(reply).unwrap();
@@ -173,8 +174,7 @@ impl ReceiveLoop {
     }
 }
 
-// TODO: Cheaper clone (do not copy hashset).
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Debug)]
 pub struct ReceiverStatistics {
     /// Number of packets received.
     pub pcap_received: u32,
@@ -185,8 +185,22 @@ pub struct ReceiverStatistics {
     pub pcap_if_dropped: u32,
     pub received: u64,
     pub received_invalid: u64,
-    pub icmp_messages_incl_dest: HashSet<Ipv6Addr>,
-    pub icmp_messages_excl_dest: HashSet<Ipv6Addr>,
+    pub icmp_messages_incl_dest: HyperLogLog,
+    pub icmp_messages_excl_dest: HyperLogLog,
+}
+
+impl Default for ReceiverStatistics {
+    fn default() -> Self {
+        Self {
+            pcap_received: 0,
+            pcap_dropped: 0,
+            pcap_if_dropped: 0,
+            received: 0,
+            received_invalid: 0,
+            icmp_messages_incl_dest: HyperLogLog::new(0.001),
+            icmp_messages_excl_dest: HyperLogLog::new(0.001),
+        }
+    }
 }
 
 impl Display for ReceiverStatistics {
@@ -199,12 +213,12 @@ impl Display for ReceiverStatistics {
         write!(
             f,
             " icmp_distinct_incl_dest={}",
-            self.icmp_messages_incl_dest.len(),
+            self.icmp_messages_incl_dest.len().trunc(),
         )?;
         write!(
             f,
             " icmp_distinct_excl_dest={}",
-            self.icmp_messages_excl_dest.len(),
+            self.icmp_messages_excl_dest.len().trunc(),
         )
     }
 }

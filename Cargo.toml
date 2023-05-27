@@ -19,6 +19,7 @@ circular-queue = "0.2.6"
 csv = "1.2.1"
 env_logger = "0.10.0"
 hex = "0.4.3"
+hyperloglog = "1.0.2"
 ip_network_table-deps-treebitmap = "0.5.0"
 log = "0.4.17"
 pcap = { version = "1.1.0" }

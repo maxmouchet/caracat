@@ -119,6 +119,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 
 [[package]]
+name = "bytecount"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c676a478f63e9fa2dd5368a42f28bba0d6c560b775f38583c8bbaa7fcd67c9c"
+
+[[package]]
 name = "caracat"
 version = "1.0.0"
 dependencies = [
@@ -130,6 +136,7 @@ dependencies = [
  "dns-lookup",
  "env_logger",
  "hex",
+ "hyperloglog",
  "ip_network_table-deps-treebitmap",
  "libm",
  "log",
@@ -473,6 +480,17 @@ name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+
+[[package]]
+name = "hyperloglog"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b48034ab5d3a9461c667ec7e1dcfb2b0586de33d9b493b2c8592e6caab9145d"
+dependencies = [
+ "bytecount",
+ "rand 0.8.5",
+ "siphasher",
+]
 
 [[package]]
 name = "iana-time-zone"
@@ -990,6 +1008,12 @@ dependencies = [
  "quote",
  "syn 2.0.18",
 ]
+
+[[package]]
+name = "siphasher"
+version = "0.3.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7bd3e3206899af3f8b12af284fafc038cc1dc2b41d1b89dd17297221c5d225de"
 
 [[package]]
 name = "socket2"
