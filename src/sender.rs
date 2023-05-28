@@ -12,10 +12,10 @@ use crate::builder::{
     Packet,
 };
 use crate::models::{Probe, L2, L3, L4};
-use crate::neighbors::{resolve_addr_v4, resolve_addr_v6, RoutingTable};
+use crate::neighbors::{resolve_addr_v4, RoutingTable};
 use crate::timestamp::{encode, tenth_ms};
 use crate::utilities::{
-    get_device, get_device_ipv4, get_device_ipv6, get_device_mac, parse_as_ipv6,
+    get_device, get_device_ipv4, get_device_ipv6, get_device_mac,
 };
 
 pub struct Sender {
@@ -99,7 +99,7 @@ impl Sender {
         let timestamp = tenth_ms(SystemTime::now().duration_since(UNIX_EPOCH).unwrap());
         let timestamp_enc = encode(timestamp);
 
-        // TODO: PAYLOAD_TWEAK_BYTES contant
+        // TODO: PAYLOAD_TWEAK_BYTES constant
         // TODO: ICMP_HEADER_SIZE constant
         let payload_size = probe.ttl as usize + 2;
         let mut packet = Packet::new(

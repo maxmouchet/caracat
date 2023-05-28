@@ -6,7 +6,7 @@
 //! 1. Let's write `t_send` the send timestamp and `n` the maximum value that can be encoded: `(2^16 - 1)` in our case.
 //! 2. We know that `t_send = ⌊t_send / n⌋ + t_send % n`. We store `t_send % n` in the packet.
 //! 3. At `t_receive` we can retrieve `t_send` by computing `t_est = ⌊t_receive / n⌋ + t_send % n`.
-//! 4. If `t_est > t_receive` then substract `n`.
+//! 4. If `t_est > t_receive` then subtract `n`.
 //! 5. This gives us `t_est = t_send` as-long as `t_receive - t_send < n`.
 //!
 //! If we use a resolution of 1/10ms for the timestamp this method works as long as the reply arrives less than 6.5535s later.

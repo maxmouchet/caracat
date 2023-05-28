@@ -120,7 +120,7 @@ impl RateLimiterStatistics {
         self.inter_call.push(delta.as_nanos() as f64);
     }
 
-    /// The percentage of time that is spent oustide the rate limiter.
+    /// The percentage of time that is spent outside the rate limiter.
     pub fn average_utilization(&self) -> f64 {
         let average = if self.inter_call.len() > 1 {
             self.inter_call.iter().sum::<f64>() / self.inter_call.len() as f64

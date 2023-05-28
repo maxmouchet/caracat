@@ -39,10 +39,10 @@ impl RoutingTable {
     ///
     /// A proper solution would be to use routing sockets to query the OS routing table.
     /// However this is complex as it relies on C data structures that are different for each OSes.
-    /// Furthemore, there exists no Rust crate that implement this in a cross-platform way.
+    /// Furthermore, there exists no Rust crate that implement this in a cross-platform way.
     ///
     /// This solution is not so bad, as netstat is present by default on macOS, FreeBSD, NetBSD and OpenBSD.
-    /// Furthremore, this is typically called once per execution, so the overhead of spawning an external process is minimal.
+    /// Furthermore, this is typically called once per execution, so the overhead of spawning an external process is minimal.
     pub fn from_netstat(path: &str) -> Result<Self> {
         let result = Command::new(path)
             .args(["-f", "inet", "-n", "-r"])
