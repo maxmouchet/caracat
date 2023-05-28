@@ -16,7 +16,10 @@ pub fn get_default_interface() -> String {
 }
 
 /// Return the pcap device for the given interface.
-pub fn get_device(interface: &str) -> Option<Device> {
+// NOTE: We need this function to get the IP addresses associated to an interface,
+// as a device created using interface.into() will contain an empty list of addresses.
+// See `impl From<&str> for Device` in pcap source code.
+fn get_device(interface: &str) -> Option<Device> {
     Device::list()
         .unwrap()
         .into_iter()
@@ -24,8 +27,8 @@ pub fn get_device(interface: &str) -> Option<Device> {
 }
 
 /// Return the preferred IPv4 address for the device.
-pub fn get_device_ipv4(device: &Device) -> Option<Ipv4Addr> {
-    let addresses: Vec<Ipv4Addr> = device
+pub fn get_ipv4_address(interface: &str) -> Option<Ipv4Addr> {
+    let addresses: Vec<Ipv4Addr> = get_device(interface)?
         .addresses
         .iter()
         .filter(|addr| addr.addr.is_ipv4())
@@ -41,8 +44,8 @@ pub fn get_device_ipv4(device: &Device) -> Option<Ipv4Addr> {
 }
 
 /// Return the preferred IPv6 address for the device.
-pub fn get_device_ipv6(device: &Device) -> Option<Ipv6Addr> {
-    let addresses: Vec<Ipv6Addr> = device
+pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
+    let addresses: Vec<Ipv6Addr> = get_device(interface)?
         .addresses
         .iter()
         .filter(|addr| addr.addr.is_ipv6())
@@ -65,11 +68,10 @@ pub fn get_device_ipv6(device: &Device) -> Option<Ipv6Addr> {
 }
 
 /// Return the MAC address of the device (if any).
-pub fn get_device_mac(device: &Device) -> Option<MacAddr> {
-    // TODO: Conversion between pcap device and pnet interface?
+pub fn get_mac_address(interface: &str) -> Option<MacAddr> {
     pnet::datalink::interfaces()
         .into_iter()
-        .find(|iface| iface.name == device.name)
+        .find(|iface| iface.name == interface)
         .and_then(|iface| iface.mac)
 }
 

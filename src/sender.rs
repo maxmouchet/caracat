@@ -1,5 +1,5 @@
 //! Send probes on the network.
-use std::net::{Ipv4Addr, Ipv6Addr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::{bail, Context, Result};
@@ -12,11 +12,9 @@ use crate::builder::{
     Packet,
 };
 use crate::models::{Probe, L2, L3, L4};
-use crate::neighbors::{resolve_addr_v4, RoutingTable};
+use crate::neighbors::{resolve_mac_address, RoutingTable};
 use crate::timestamp::{encode, tenth_ms};
-use crate::utilities::{
-    get_device, get_device_ipv4, get_device_ipv6, get_device_mac,
-};
+use crate::utilities::{get_ipv4_address, get_ipv6_address, get_mac_address};
 
 pub struct Sender {
     // TODO: Check that we do not allocate more than the C++ version.
@@ -35,9 +33,7 @@ impl Sender {
     // TODO: Parameter for gateway resolution address.
     //       Accept gateway MAC address and do resolution upstream?
     pub fn new(interface: &str, instance_id: u16, dry_run: bool) -> Result<Self> {
-        let device = get_device(interface).context("Device not found")?;
-
-        let handle = pcap::Capture::from_device(device.clone())?
+        let handle = pcap::Capture::from_device(interface)?
             .buffer_size(0)
             .snaplen(0)
             .open()?;
@@ -58,19 +54,19 @@ impl Sender {
         // TODO: dst_mac_{v4,v6}
 
         if l2_protocol == L2::Ethernet {
-            src_mac = get_device_mac(&device).context("Ethernet device has no MAC address")?;
+            src_mac = get_mac_address(interface).context("Ethernet device has no MAC address")?;
             let table = RoutingTable::from_native()?;
             let route = table
-                .get(Ipv4Addr::new(192, 0, 2, 0))
+                .get(IpAddr::V4(Ipv4Addr::new(192, 0, 2, 0)))
                 .context("No route for 192.0.2.0")?;
-            dst_mac = resolve_addr_v4(device.clone(), route.gateway)?;
+            dst_mac = resolve_mac_address(interface, route.gateway)?;
         } else {
             src_mac = MacAddr::zero();
             dst_mac = MacAddr::zero();
         }
 
-        let src_ip_v4 = get_device_ipv4(&device).unwrap_or(Ipv4Addr::UNSPECIFIED);
-        let src_ip_v6 = get_device_ipv6(&device).unwrap_or(Ipv6Addr::UNSPECIFIED);
+        let src_ip_v4 = get_ipv4_address(interface).unwrap_or(Ipv4Addr::UNSPECIFIED);
+        let src_ip_v6 = get_ipv6_address(interface).unwrap_or(Ipv6Addr::UNSPECIFIED);
 
         info!(
             "src_mac={} dst_mac={}",

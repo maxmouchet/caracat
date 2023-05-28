@@ -1,24 +1,24 @@
 use std::net::Ipv4Addr;
 
 use anyhow::{Context, Result};
-use pcap::{Device, Direction};
+use pcap::Direction;
 use pnet::datalink::MacAddr;
 use pnet::packet::arp::{ArpHardwareTypes, ArpOperations, ArpPacket, MutableArpPacket};
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket, MutableEthernetPacket};
 
-use crate::utilities::{get_device_ipv4, get_device_mac};
+use crate::utilities::{get_ipv4_address, get_mac_address};
 
 /// Perform an ARP request to get the MAC address of the specified IPv4 address.
 ///
 /// This function will timeout after 1s if no replies are received.
-pub fn resolve_addr_v4(device: Device, addr: Ipv4Addr) -> Result<MacAddr> {
-    let src_mac = get_device_mac(&device).context("Device has no MAC address")?;
-    let src_ip = get_device_ipv4(&device).context("Device has no IPv4 address")?;
+pub fn resolve_mac_address_v4(interface: &str, addr: Ipv4Addr) -> Result<MacAddr> {
+    let src_mac = get_mac_address(interface).context("Interface has no MAC address")?;
+    let src_ip = get_ipv4_address(interface).context("Interface has no IPv4 address")?;
     let mut buffer =
         [0u8; EthernetPacket::minimum_packet_size() + ArpPacket::minimum_packet_size()];
     build_arp_packet(&mut buffer, src_mac, src_ip, addr);
 
-    let mut cap = pcap::Capture::from_device(device)?
+    let mut cap = pcap::Capture::from_device(interface)?
         .immediate_mode(true)
         .timeout(1000)
         .open()?;

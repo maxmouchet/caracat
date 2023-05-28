@@ -2,7 +2,7 @@ use std::net::Ipv6Addr;
 
 use anyhow::{Context, Result};
 
-use pcap::{Device, Direction};
+use pcap::Direction;
 use pnet::datalink::MacAddr;
 
 use pnet::packet::ethernet::{EtherTypes, EthernetPacket, MutableEthernetPacket};
@@ -14,20 +14,20 @@ use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv6::{Ipv6Packet, MutableIpv6Packet};
 use pnet::packet::Packet;
 
-use crate::utilities::{get_device_ipv6, get_device_mac};
+use crate::utilities::{get_ipv6_address, get_mac_address};
 
 /// Perform an NDP request to get the MAC address of the specified IPv6 address.
 ///
 /// This function will timeout after 1s if no replies are received.
-pub fn resolve_addr_v6(device: Device, addr: Ipv6Addr) -> Result<MacAddr> {
-    let src_mac = get_device_mac(&device).context("Device has no MAC address")?;
-    let src_ip = get_device_ipv6(&device).context("Device has no IPv6 address")?;
+pub fn resolve_mac_address_v6(interface: &str, addr: Ipv6Addr) -> Result<MacAddr> {
+    let src_mac = get_mac_address(interface).context("Interface has no MAC address")?;
+    let src_ip = get_ipv6_address(interface).context("Interface has no IPv6 address")?;
     let mut buffer = [0u8; EthernetPacket::minimum_packet_size()
         + Ipv6Packet::minimum_packet_size()
         + NeighborSolicitPacket::minimum_packet_size()];
     build_ndp_packet(&mut buffer, src_mac, src_ip, addr);
 
-    let mut cap = pcap::Capture::from_device(device)?
+    let mut cap = pcap::Capture::from_device(interface)?
         .immediate_mode(true)
         .timeout(1000)
         .open()?;

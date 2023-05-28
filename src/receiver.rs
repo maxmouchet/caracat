@@ -1,6 +1,5 @@
 use crate::models::Reply;
 use crate::parser::parse;
-use crate::utilities::get_device;
 use anyhow::{anyhow, Context, Result};
 use pcap::{Active, Capture, Direction, Linktype, Stat};
 
@@ -16,9 +15,7 @@ impl Receiver {
         timeout_ms: i32,
         immediate_mode: bool,
     ) -> Result<Self> {
-        let device = get_device(interface).context("cannot find interface")?;
-
-        let mut cap = pcap::Capture::from_device(device)?
+        let mut cap = pcap::Capture::from_device(interface)?
             .buffer_size(buffer_size)
             // `timeout` has two uses here:
             // 1. Batch deliveries from pcap to reduce syscall overhead
