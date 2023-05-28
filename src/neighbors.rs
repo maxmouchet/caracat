@@ -6,7 +6,7 @@
 //! use anyhow::{Context, Result};
 //! use pcap::Device;
 //! use std::net::Ipv4Addr;
-//! use caracat::neighbors::{RoutingTable, resolve_address};
+//! use caracat::neighbors::{RoutingTable, resolve_addr_v4};
 //! use caracat::utilities::get_device;
 //!
 //! fn main() -> Result<()> {
@@ -16,14 +16,16 @@
 //!     let table = RoutingTable::from_native()?;
 //!
 //!     let route = table.get(target).context("route not found")?;
-//!     let mac = resolve_address(device, route.gateway)?;
+//!     let mac = resolve_addr_v4(device, route.gateway)?;
 //!
 //!     println!("{:?} via {:?} ({:?})", target, route.gateway, mac);
 //!     Ok(())
 //! }
 //! ```
 mod arp;
+mod ndp;
 mod route;
 
 pub use arp::*;
+pub use ndp::*;
 pub use route::*;

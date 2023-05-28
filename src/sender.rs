@@ -12,9 +12,11 @@ use crate::builder::{
     Packet,
 };
 use crate::models::{Probe, L2, L3, L4};
-use crate::neighbors::{resolve_address, RoutingTable};
+use crate::neighbors::{resolve_addr_v4, resolve_addr_v6, RoutingTable};
 use crate::timestamp::{encode, tenth_ms};
-use crate::utilities::{get_device, get_device_ipv4, get_device_ipv6, get_device_mac};
+use crate::utilities::{
+    get_device, get_device_ipv4, get_device_ipv6, get_device_mac, parse_as_ipv6,
+};
 
 pub struct Sender {
     // TODO: Check that we do not allocate more than the C++ version.
@@ -53,6 +55,7 @@ impl Sender {
 
         let src_mac: MacAddr;
         let dst_mac: MacAddr;
+        // TODO: dst_mac_{v4,v6}
 
         if l2_protocol == L2::Ethernet {
             src_mac = get_device_mac(&device).context("Ethernet device has no MAC address")?;
@@ -60,7 +63,7 @@ impl Sender {
             let route = table
                 .get(Ipv4Addr::new(192, 0, 2, 0))
                 .context("No route for 192.0.2.0")?;
-            dst_mac = resolve_address(device.clone(), route.gateway)?;
+            dst_mac = resolve_addr_v4(device.clone(), route.gateway)?;
         } else {
             src_mac = MacAddr::zero();
             dst_mac = MacAddr::zero();
