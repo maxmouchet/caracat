@@ -1,4 +1,5 @@
 //! Function for parsing replies.
+use std::net::IpAddr;
 use std::time::Duration;
 
 use anyhow::{bail, Context, Result};
@@ -192,16 +193,16 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
 }
 
 fn parse_outer_ipv4(reply: &mut Reply, ip: &Ipv4Packet) {
-    reply.reply_src_addr = ip.get_source().to_ipv6_mapped();
-    reply.reply_dst_addr = ip.get_destination().to_ipv6_mapped();
+    reply.reply_src_addr = IpAddr::V4(ip.get_source());
+    reply.reply_dst_addr = IpAddr::V4(ip.get_destination());
     reply.reply_id = ip.get_identification();
     reply.reply_size = ip.get_total_length();
     reply.reply_ttl = ip.get_ttl();
 }
 
 fn parse_outer_ipv6(reply: &mut Reply, ip: &Ipv6Packet) {
-    reply.reply_src_addr = ip.get_source();
-    reply.reply_dst_addr = ip.get_destination();
+    reply.reply_src_addr = IpAddr::V6(ip.get_source());
+    reply.reply_dst_addr = IpAddr::V6(ip.get_destination());
     reply.reply_id = 0; // Not implemented for IPv6.
     reply.reply_size = ip.get_payload_length();
     reply.reply_ttl = ip.get_hop_limit();
@@ -222,14 +223,14 @@ fn parse_outer_icmpv6(reply: &mut Reply, icmp: &Icmpv6Packet) {
 }
 
 fn parse_inner_ipv4(reply: &mut Reply, ip: &Ipv4Packet) {
-    reply.probe_dst_addr = ip.get_destination().to_ipv6_mapped();
+    reply.probe_dst_addr = IpAddr::V4(ip.get_destination());
     reply.probe_id = ip.get_identification();
     reply.probe_size = ip.get_total_length();
     reply.quoted_ttl = ip.get_ttl();
 }
 
 fn parse_inner_ipv6(reply: &mut Reply, ip: &Ipv6Packet) {
-    reply.probe_dst_addr = ip.get_destination();
+    reply.probe_dst_addr = IpAddr::V6(ip.get_destination());
     reply.probe_id = 0; // Not implemented for IPv6.
     reply.probe_size = ip.get_payload_length();
     reply.quoted_ttl = ip.get_hop_limit();

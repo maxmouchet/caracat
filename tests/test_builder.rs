@@ -1,11 +1,11 @@
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, Ipv6Addr};
+use std::str::FromStr;
 
 use caracat::builder::{
     build_ethernet, build_icmp, build_icmpv6, build_ipv4, build_ipv6, build_udp, Packet,
 };
 use caracat::models::{L2, L3, L4};
 use caracat::timestamp::encode;
-use caracat::utilities::parse_as_ipv6;
 use pnet::packet::ethernet::EthernetPacket;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::ipv6::Ipv6Packet;
@@ -48,8 +48,8 @@ fn test_build_ipv4_icmp() {
 
 #[test]
 fn test_build_ipv6_icmpv6() {
-    let src_addr = parse_as_ipv6("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap();
-    let dst_addr = parse_as_ipv6("2001:4860:4860::8888").unwrap();
+    let src_addr = Ipv6Addr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap();
+    let dst_addr = Ipv6Addr::from_str("2001:4860:4860::8888").unwrap();
     let flow_id = 24000;
     let ttl = 8;
     let timestamp_enc = encode(123456);
@@ -116,8 +116,8 @@ fn test_build_ipv4_udp() {
 
 #[test]
 fn test_build_ipv6_udp() {
-    let src_addr = parse_as_ipv6("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap();
-    let dst_addr = parse_as_ipv6("2001:4860:4860::8888").unwrap();
+    let src_addr = Ipv6Addr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap();
+    let dst_addr = Ipv6Addr::from_str("2001:4860:4860::8888").unwrap();
     let src_port = 24000;
     let dst_port = 33434;
     let ttl = 8;

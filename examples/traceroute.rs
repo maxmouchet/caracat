@@ -6,7 +6,7 @@ use caracat::models::{Probe, L4};
 use clap::Parser;
 
 use caracat::receiver::Receiver;
-use caracat::utilities::{get_default_interface, ip_to_ipv6, ipv6_to_ip};
+use caracat::utilities::get_default_interface;
 use caracat::Sender;
 use dns_lookup::{lookup_addr, lookup_host};
 use rand::{thread_rng, Rng};
@@ -106,23 +106,21 @@ fn main() -> Result<()> {
 
     let host = args.host;
     let addr = match host.parse::<IpAddr>() {
-        Ok(addr) => ip_to_ipv6(addr),
+        Ok(addr) => addr,
         Err(_) => lookup_host(&host)
             .unwrap()
             .into_iter()
             .filter(|addr| !(addr.is_ipv4() && args.ipv6))
             .filter(|addr| !(addr.is_ipv6() && args.ipv4))
             .next()
-            .map(ip_to_ipv6)
             .unwrap(),
     };
 
     let mut protocol = L4::UDP;
     if args.icmp {
-        if addr.to_ipv4_mapped().is_some() {
-            protocol = L4::ICMP;
-        } else {
-            protocol = L4::ICMPv6;
+        match addr {
+            IpAddr::V4(_) => protocol = L4::ICMP,
+            IpAddr::V6(_) => protocol = L4::ICMPv6,
         }
     }
 
@@ -147,7 +145,6 @@ fn main() -> Result<()> {
                 if !reply.is_valid(instance_id) || reply.probe_dst_addr != addr {
                     continue;
                 }
-                let addr = ipv6_to_ip(reply.reply_src_addr);
                 let host = if !args.do_not_resolve {
                     lookup_addr(&addr.into()).ok()
                 } else {

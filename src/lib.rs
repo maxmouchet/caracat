@@ -11,10 +11,8 @@ pub mod rate_limiter;
 pub mod receiver;
 pub mod sender;
 pub mod timestamp;
-pub mod tree;
 pub mod utilities;
 
 pub use checksum::*;
 pub use high_level::*;
 pub use sender::*;
-pub use tree::*;

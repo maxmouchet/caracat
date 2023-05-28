@@ -5,16 +5,16 @@
 //! Run with `cargo run --example yarrp -- --help`.
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::net::{Ipv4Addr, Ipv6Addr};
+use std::net::{Ipv4Addr};
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use anyhow::{bail, Result};
 use caracat::models::{Probe, L4};
 use caracat::probe::{probe, Config};
-use caracat::utilities::{
-    configure_logger, exit_process_on_panic, get_default_interface, parse_as_ipv6,
-};
+use caracat::utilities::{configure_logger, exit_process_on_panic, get_default_interface};
 use clap::Parser;
+use ip_network::IpNetwork;
 use libm::{exp, lgamma, log};
 use log::LevelFilter;
 use permutation_iterator::Permutor;
@@ -55,34 +55,15 @@ impl From<ProbeType> for L4 {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-struct IPv6Prefix {
-    pub address: Ipv6Addr,
-    pub length: u8,
-}
-
-impl IPv6Prefix {
-    pub fn from_str(s: &str) -> Result<Self> {
-        // TODO: We could probably reuse the code in `caracat::tree`.
-        let elems: Vec<&str> = s.split('/').collect();
-        let address = parse_as_ipv6(elems[0])?;
-        let mut length: u8 = elems.get(1).unwrap_or(&"32").parse()?;
-        if address.to_ipv4_mapped().is_some() {
-            length += 96;
-        }
-        Ok(IPv6Prefix { address, length })
-    }
-}
-
 /// Iterates randomly over the (prefix, ttl) space.
 struct ProbingSpace {
     permutor: Permutor,
-    prefixes: Vec<IPv6Prefix>,
+    prefixes: Vec<IpNetwork>,
     ttls: Vec<u8>,
 }
 
 impl ProbingSpace {
-    pub fn new(prefixes: Vec<IPv6Prefix>, ttls: Vec<u8>, seed: u64) -> ProbingSpace {
+    pub fn new(prefixes: Vec<IpNetwork>, ttls: Vec<u8>, seed: u64) -> ProbingSpace {
         let permutor = Permutor::new_with_u64_key((prefixes.len() * ttls.len()) as u64, seed);
         ProbingSpace {
             permutor,
@@ -91,7 +72,7 @@ impl ProbingSpace {
         }
     }
 
-    fn get(&self, index: usize) -> (IPv6Prefix, u8) {
+    fn get(&self, index: usize) -> (IpNetwork, u8) {
         let (index, coordinate) = (index / self.prefixes.len(), index % self.prefixes.len());
         let prefix = self.prefixes[coordinate];
         let (_, coordinate) = (index / self.ttls.len(), index % self.ttls.len());
@@ -101,7 +82,7 @@ impl ProbingSpace {
 }
 
 impl Iterator for ProbingSpace {
-    type Item = (IPv6Prefix, u8);
+    type Item = (IpNetwork, u8);
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.permutor.next() {
@@ -267,14 +248,14 @@ fn main() -> Result<()> {
     let prefixes = input
         .lines()
         .flatten()
-        .flat_map(|line| IPv6Prefix::from_str(&line))
+        .flat_map(|line| IpNetwork::from_str(&line))
         .collect();
 
     let space = ProbingSpace::new(prefixes, ttls, rng.gen());
 
     let mut probes: Box<dyn Iterator<Item = Probe>>;
     probes = Box::new(space.map(|(prefix, ttl)| Probe {
-        dst_addr: prefix.address, // TODO: prefix splitting + "flow mapping"
+        dst_addr: prefix.network_address(), // TODO: prefix splitting + "flow mapping"
         src_port: 24000,
         dst_port: args.port,
         ttl,

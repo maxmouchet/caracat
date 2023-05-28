@@ -2,14 +2,13 @@
 use std::fmt::{Display, Formatter};
 use std::sync::{Arc, Mutex};
 
-
 use anyhow::Result;
+use ip_network_table::IpNetworkTable;
 use log::{error, info, trace};
 
 use crate::models::Probe;
 use crate::rate_limiter::RateLimiter;
 use crate::sender::Sender;
-use crate::tree::IpTree;
 
 pub struct SendLoop {
     batch_size: u64,
@@ -18,8 +17,8 @@ pub struct SendLoop {
     max_ttl: Option<u8>,
     max_probes: Option<u64>,
     packets: u64,
-    allowed_prefixes: Option<IpTree>,
-    blocked_prefixes: Option<IpTree>,
+    allowed_prefixes: Option<IpNetworkTable<()>>,
+    blocked_prefixes: Option<IpNetworkTable<()>>,
     rate_limiter: RateLimiter,
     sender: Sender,
     statistics: Arc<Mutex<SendStatistics>>,
@@ -33,8 +32,8 @@ impl SendLoop {
         max_ttl: Option<u8>,
         max_probes: Option<u64>,
         packets: u64,
-        allowed_prefixes: Option<IpTree>,
-        blocked_prefixes: Option<IpTree>,
+        allowed_prefixes: Option<IpNetworkTable<()>>,
+        blocked_prefixes: Option<IpNetworkTable<()>>,
         rate_limiter: RateLimiter,
         sender: Sender,
     ) -> Self {
@@ -76,7 +75,7 @@ impl SendLoop {
             }
 
             if let Some(tree) = &self.allowed_prefixes {
-                if !tree.contains(probe.dst_addr) {
+                if !tree.longest_match(probe.dst_addr).is_some() {
                     trace!("{} filter=prefix_not_allowed", probe);
                     statistics.filtered_prefix_not_allowed += 1;
                     continue;
@@ -84,7 +83,7 @@ impl SendLoop {
             }
 
             if let Some(tree) = &self.blocked_prefixes {
-                if tree.contains(probe.dst_addr) {
+                if tree.longest_match(probe.dst_addr).is_some() {
                     trace!("{} filter=prefix_blocked", probe);
                     statistics.filtered_prefix_blocked += 1;
                     continue;

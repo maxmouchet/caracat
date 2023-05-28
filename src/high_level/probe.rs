@@ -27,8 +27,7 @@ use crate::rate_limiter::{RateLimiter, RateLimitingMethod};
 use crate::receive_loop::{ReceiveLoop, ReceiveStatistics};
 use crate::send_loop::{SendLoop, SendStatistics};
 use crate::sender::Sender;
-use crate::tree::IpTree;
-use crate::utilities::get_default_interface;
+use crate::utilities::{get_default_interface, prefix_filter_from_file};
 
 /// Send probes from an iterator.
 pub fn probe<T: Iterator<Item = Probe>>(
@@ -39,12 +38,12 @@ pub fn probe<T: Iterator<Item = Probe>>(
 
     let allowed_prefixes = match config.allowed_prefixes_file {
         None => None,
-        Some(path) => Some(IpTree::from_file(&path)?),
+        Some(path) => Some(prefix_filter_from_file(&path)?),
     };
 
     let blocked_prefixes = match config.blocked_prefixes_file {
         None => None,
-        Some(path) => Some(IpTree::from_file(&path)?),
+        Some(path) => Some(prefix_filter_from_file(&path)?),
     };
 
     let rate_limiter = RateLimiter::new(

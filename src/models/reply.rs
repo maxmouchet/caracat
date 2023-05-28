@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-use std::net::Ipv6Addr;
+use std::net::{IpAddr, Ipv6Addr};
 
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::{icmp, icmpv6};
@@ -30,9 +30,9 @@ pub struct Reply {
     pub capture_timestamp: u64,
     // * Reply attributes (IP) *
     /// The source IP of the reply packet.
-    pub reply_src_addr: Ipv6Addr,
+    pub reply_src_addr: IpAddr,
     /// The destination IP of the reply packet.
-    pub reply_dst_addr: Ipv6Addr,
+    pub reply_dst_addr: IpAddr,
     /// The ID field of the reply packet (0 for IPv6).
     pub reply_id: u16,
     /// The size in bytes of the reply packet.
@@ -52,7 +52,7 @@ pub struct Reply {
     // * Probe attributes (IP → ICMP → IP) *
     /// The IP that was targeted by the probe.
     /// If we received a reply from this IP then `reply_src_addr == probe_dst_addr`.
-    pub probe_dst_addr: Ipv6Addr,
+    pub probe_dst_addr: IpAddr,
     /// The ID field of the probe packet (0 for IPv6).
     pub probe_id: u16,
     /// The size in bytes of the probe packet.
@@ -83,8 +83,8 @@ impl Default for Reply {
     fn default() -> Self {
         Reply {
             capture_timestamp: 0,
-            reply_src_addr: Ipv6Addr::UNSPECIFIED,
-            reply_dst_addr: Ipv6Addr::UNSPECIFIED,
+            reply_src_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
+            reply_dst_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             reply_id: 0,
             reply_size: 0,
             reply_ttl: 0,
@@ -92,7 +92,7 @@ impl Default for Reply {
             reply_icmp_type: 0,
             reply_icmp_code: 0,
             reply_mpls_labels: vec![],
-            probe_dst_addr: Ipv6Addr::UNSPECIFIED,
+            probe_dst_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             probe_id: 0,
             probe_size: 0,
             probe_protocol: 0,
@@ -134,7 +134,10 @@ impl Display for Reply {
 impl Reply {
     pub fn checksum(&self, instance_id: u16) -> u16 {
         // TODO: IPv6 support? Or just encode the last 32 bits for IPv6?
-        let dst_addr_bytes: [u8; 4] = self.probe_dst_addr.octets()[12..].try_into().unwrap();
+        let dst_addr_bytes = match self.probe_dst_addr {
+            IpAddr::V4(v4) => v4.octets(),
+            IpAddr::V6(v6) => v6.octets()[12..].try_into().unwrap(),
+        };
         let dst_addr = u32::from_le_bytes(dst_addr_bytes);
         caracat_checksum(instance_id, dst_addr, self.probe_src_port, self.probe_ttl)
     }

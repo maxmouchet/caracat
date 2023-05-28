@@ -11,7 +11,7 @@ use crate::builder::{
     build_ethernet, build_icmp, build_icmpv6, build_ipv4, build_ipv6, build_loopback, build_udp,
     Packet,
 };
-use crate::models::{Probe, L2, L3, L4};
+use crate::models::{Probe, L2, L4};
 use crate::neighbors::{resolve_mac_address, RoutingTable};
 use crate::timestamp::{encode, tenth_ms};
 use crate::utilities::{get_ipv4_address, get_ipv6_address, get_mac_address};
@@ -113,15 +113,15 @@ impl Sender {
             L2::None => {}
         }
 
-        match l3_protocol {
-            L3::IPv4 => build_ipv4(
+        match probe.dst_addr {
+            IpAddr::V4(dst_addr) => build_ipv4(
                 &mut packet,
                 self.src_ip_v4,
-                probe.dst_addr.to_ipv4_mapped().unwrap(),
+                dst_addr,
                 probe.ttl,
                 probe.checksum(self.instance_id),
             ),
-            L3::IPv6 => build_ipv6(&mut packet, self.src_ip_v6, probe.dst_addr, probe.ttl),
+            IpAddr::V6(dst_addr) => build_ipv6(&mut packet, self.src_ip_v6, dst_addr, probe.ttl),
         }
 
         match l4_protocol {

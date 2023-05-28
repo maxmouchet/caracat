@@ -1,11 +1,15 @@
 //! Utilities.
-use std::io::Write;
-use std::net::{AddrParseError, IpAddr, Ipv4Addr, Ipv6Addr};
-use std::path::Path;
+use anyhow::Result;
+use std::fs::File;
+use std::io::{BufRead, BufReader, Write};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::{panic, process};
 
 use chrono::Utc;
+use ip_network::IpNetwork;
+use ip_network_table::IpNetworkTable;
 use log::LevelFilter;
 use pcap::Device;
 use pnet::datalink::MacAddr;
@@ -83,28 +87,23 @@ pub fn get_extension(path: &Path) -> String {
         .unwrap()
 }
 
-/// Parse IPv4 and IPv6 addresses as an IPv6 object.
-/// IPv4 addresses are converted to IPv4-mapped IPv6 addresses
-pub fn parse_as_ipv6(s: &str) -> Result<Ipv6Addr, AddrParseError> {
-    match s.contains(':') {
-        true => Ipv6Addr::from_str(s),
-        false => Ipv6Addr::from_str(&format!("::ffff:{s}")),
-    }
-}
-
-// TODO: Use IpAddr everywhere and remove these methods.
-pub fn ip_to_ipv6(addr: IpAddr) -> Ipv6Addr {
-    match addr {
-        IpAddr::V4(ipv4) => ipv4.to_ipv6_mapped(),
-        IpAddr::V6(ipv6) => ipv6,
-    }
-}
-
-pub fn ipv6_to_ip(addr: Ipv6Addr) -> IpAddr {
-    match addr.to_ipv4_mapped() {
-        Some(ipv4) => IpAddr::V4(ipv4),
-        None => IpAddr::V6(addr),
-    }
+pub fn prefix_filter_from_file(path: &PathBuf) -> Result<IpNetworkTable<()>> {
+    let mut tree = IpNetworkTable::new();
+    let reader = BufReader::new(File::open(path)?);
+    // TODO: Remove calls to unwrap.
+    reader
+        .lines()
+        .flat_map(|line| line.ok())
+        .filter(|line| !line.starts_with('#'))
+        .flat_map(|line| {
+            // If there are multiple columns, take only the first one.
+            // e.g. pyasn or bgp.potaroo.net format.
+            line.split_whitespace()
+                .next()
+                .and_then(|s| IpNetwork::from_str(s).ok())
+        })
+        .for_each(|network| tree.insert(network, ()).unwrap());
+    Ok(tree)
 }
 
 /// Exit the whole process when a thread panic.

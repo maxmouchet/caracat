@@ -8,6 +8,7 @@ caracat (always in lowercase) is a port of [caracal](https://github.com/dioptra-
 
 The initial motivation was to benefit from a saner build system to make the project easier to maintain.
 The architecture is very similar between the two projects and the input/output format is the same.
+Versions > 1.0.0 might break this compatibility to fix some idiosyncrasies inherited by caracal.
 
 Multiple example binaries are provided:
 ```bash
