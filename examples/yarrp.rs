@@ -9,8 +9,8 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
 
 use anyhow::{bail, Result};
-use caracat::easy::{probe, Config};
 use caracat::models::{Probe, L4};
+use caracat::probe::{probe, Config};
 use caracat::utilities::{
     configure_logger, exit_process_on_panic, get_default_interface, parse_as_ipv6,
 };

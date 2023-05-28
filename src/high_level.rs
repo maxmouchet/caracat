@@ -1,3 +1,4 @@
+pub mod probe;
 pub mod receive_loop;
 pub mod send_loop;
 

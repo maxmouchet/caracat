@@ -2,7 +2,6 @@
 
 pub mod builder;
 pub mod checksum;
-pub mod easy;
 pub mod high_level;
 pub mod logger;
 pub mod models;

@@ -3,7 +3,7 @@
 //! ```no_run
 //! use std::fs::File;
 //! use std::io::BufReader;
-//! use caracat::easy::{Config, probe_from_csv};
+//! use caracat::probe::{Config, probe_from_csv};
 //!
 //! let config = Config::default();
 //! let input = File::open("probes.example").unwrap();
