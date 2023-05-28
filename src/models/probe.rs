@@ -1,9 +1,9 @@
 use std::fmt::{Display, Formatter};
 use std::net::Ipv6Addr;
-use std::time::Duration;
+
 
 use serde::{de, Deserialize, Serialize};
-use serde_with::{serde_as, DurationSecondsWithFrac};
+use serde_with::{serde_as};
 
 use crate::checksum::caracat_checksum;
 use crate::models::protocols::{L3, L4};
@@ -19,9 +19,6 @@ pub struct Probe {
     pub dst_port: u16,
     pub ttl: u8,
     pub protocol: L4,
-    #[serde(default)]
-    #[serde_as(as = "DurationSecondsWithFrac<f64>")]
-    pub wait: Duration,
 }
 
 impl Display for Probe {
@@ -30,8 +27,7 @@ impl Display for Probe {
         write!(f, " src_port={}", self.src_port)?;
         write!(f, " dst_port={}", self.dst_port)?;
         write!(f, " ttl={}", self.ttl)?;
-        write!(f, " protocol={}", self.protocol)?;
-        write!(f, " wait={:?}", self.wait)
+        write!(f, " protocol={}", self.protocol)
     }
 }
 

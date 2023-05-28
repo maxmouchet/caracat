@@ -279,7 +279,6 @@ fn main() -> Result<()> {
         dst_port: args.port,
         ttl,
         protocol,
-        wait: Default::default(),
     }));
 
     // We cannot use `if let Some(lambda) = ...` here as lambda will be dropped before calling `probe`.

@@ -139,7 +139,6 @@ fn main() -> Result<()> {
             dst_port: args.dport,
             ttl,
             protocol,
-            wait: Default::default(),
         };
         sender.send(&probe).unwrap();
 

@@ -1,7 +1,7 @@
 //! High-level interface for sending probes.
 use std::fmt::{Display, Formatter};
 use std::sync::{Arc, Mutex};
-use std::thread::sleep;
+
 
 use anyhow::Result;
 use log::{error, info, trace};
@@ -104,10 +104,6 @@ impl SendLoop {
                         statistics.failed += 1;
                         error!("{}", error);
                     }
-                }
-                // Wait if requested.
-                if !probe.wait.is_zero() {
-                    sleep(probe.wait)
                 }
                 // Rate limit every `batch_size` packets sent.
                 if (statistics.sent + statistics.failed) % self.batch_size == 0 {
