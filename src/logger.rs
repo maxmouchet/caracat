@@ -6,9 +6,8 @@ use std::time::Duration;
 
 use log::info;
 
+use crate::high_level::{ReceiveStatistics, SendStatistics};
 use crate::rate_limiter::RateLimiterStatistics;
-use crate::receive_loop::ReceiveStatistics;
-use crate::send_loop::SendStatistics;
 
 pub struct StatisticsLogger {
     handle: JoinHandle<()>,

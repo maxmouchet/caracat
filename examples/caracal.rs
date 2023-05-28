@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
-use caracat::probe::{probe_from_csv, Config};
+use caracat::high_level::{probe_from_csv, Config};
 use caracat::rate_limiter::RateLimitingMethod;
 use caracat::utilities::{configure_logger, exit_process_on_panic, get_default_interface};
 use clap::Parser;

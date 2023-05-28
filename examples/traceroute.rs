@@ -6,8 +6,8 @@ use caracat::models::{Probe, L4};
 use clap::Parser;
 
 use caracat::receiver::Receiver;
+use caracat::sender::Sender;
 use caracat::utilities::get_default_interface;
-use caracat::Sender;
 use dns_lookup::{lookup_addr, lookup_host};
 use rand::{thread_rng, Rng};
 

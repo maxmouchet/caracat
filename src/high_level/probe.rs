@@ -21,11 +21,10 @@ use anyhow::Result;
 use log::{info, warn};
 use rand::{thread_rng, Rng};
 
+use crate::high_level::{ReceiveLoop, ReceiveStatistics, SendLoop, SendStatistics};
 use crate::logger::StatisticsLogger;
 use crate::models::Probe;
 use crate::rate_limiter::{RateLimiter, RateLimitingMethod};
-use crate::receive_loop::{ReceiveLoop, ReceiveStatistics};
-use crate::send_loop::{SendLoop, SendStatistics};
 use crate::sender::Sender;
 use crate::utilities::{get_default_interface, prefix_filter_from_file};
 

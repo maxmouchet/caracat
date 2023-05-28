@@ -5,13 +5,13 @@
 //! Run with `cargo run --example yarrp -- --help`.
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::net::{Ipv4Addr};
+use std::net::Ipv4Addr;
 use std::path::PathBuf;
 use std::str::FromStr;
 
 use anyhow::{bail, Result};
+use caracat::high_level::{probe, Config};
 use caracat::models::{Probe, L4};
-use caracat::probe::{probe, Config};
 use caracat::utilities::{configure_logger, exit_process_on_panic, get_default_interface};
 use clap::Parser;
 use ip_network::IpNetwork;
