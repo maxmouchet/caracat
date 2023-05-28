@@ -98,7 +98,11 @@ fn main() -> Result<()> {
     let mut sender = Sender::new(&args.device, instance_id, false)?;
     let mut receiver = Receiver::new_interactive(&args.device, (args.wait * 1000.0) as i32)?;
 
-    let mut irr = IrrClient::new("whois.radb.net:43").connect()?;
+    let mut irr = if args.as_path_lookups {
+        IrrClient::new("whois.radb.net:43").connect().ok()
+    } else {
+        None
+    };
 
     let host = args.host;
     let addr = match host.parse::<IpAddr>() {
@@ -150,11 +154,7 @@ fn main() -> Result<()> {
                 } else {
                     None
                 };
-                let asn = if args.as_path_lookups {
-                    lookup_as(&mut irr, addr)
-                } else {
-                    None
-                };
+                let asn = irr.as_mut().and_then(|mut irr| lookup_as(&mut irr, addr));
                 // TODO: Print [ASN*] only when -A is specified
                 // TODO: Print MPLS labels when -e is specified
                 // TODO: Do not print IP between parens if -n is specified
