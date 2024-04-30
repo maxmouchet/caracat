@@ -146,19 +146,19 @@ fn main() -> Result<()> {
                     continue;
                 }
                 let host = if !args.do_not_resolve {
-                    lookup_addr(&addr.into()).ok()
+                    lookup_addr(&reply.reply_src_addr).ok()
                 } else {
                     None
                 };
-                let asn = irr.as_mut().and_then(|mut irr| lookup_as(&mut irr, addr));
+                let asn = irr.as_mut().and_then(|mut irr| lookup_as(&mut irr, reply.reply_src_addr));
                 // TODO: Print [ASN*] only when -A is specified
                 // TODO: Print MPLS labels when -e is specified
                 // TODO: Do not print IP between parens if -n is specified
                 println!(
                     "{:>2}  {} ({}) [{}] {:?}ms",
                     reply.probe_ttl,
-                    host.unwrap_or(addr.to_string()),
-                    addr,
+                    host.unwrap_or(reply.reply_src_addr.to_string()),
+                    reply.reply_src_addr,
                     asn.unwrap_or("*".to_string()),
                     reply.rtt as f64 / 10.0
                 );
