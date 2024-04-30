@@ -1,5 +1,5 @@
 use std::fmt::{Display, Formatter};
-use std::net::{IpAddr};
+use std::net::IpAddr;
 
 use serde::{Deserialize, Serialize};
 

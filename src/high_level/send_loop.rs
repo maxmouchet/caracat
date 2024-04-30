@@ -75,7 +75,7 @@ impl SendLoop {
             }
 
             if let Some(tree) = &self.allowed_prefixes {
-                if !tree.longest_match(probe.dst_addr).is_some() {
+                if tree.longest_match(probe.dst_addr).is_none() {
                     trace!("{} filter=prefix_not_allowed", probe);
                     statistics.filtered_prefix_not_allowed += 1;
                     continue;

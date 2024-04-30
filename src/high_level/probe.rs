@@ -54,7 +54,6 @@ pub fn probe<T: Iterator<Item = Probe>>(
 
     let receiver = ReceiveLoop::new(
         config.interface.clone(),
-        config.output_file_csv,
         config.instance_id,
         config.extra_string,
         config.integrity_check,
@@ -137,8 +136,6 @@ pub struct Config {
     pub interface: String,
     /// Maximum number of probes to send (unlimited by default).
     pub max_probes: Option<u64>,
-    /// File to which the captured replies will be written.
-    pub output_file_csv: Option<PathBuf>,
     /// Number of packets to send per probe.
     pub packets: u64,
     /// Probing rate in packets per second.
@@ -163,7 +160,6 @@ impl Default for Config {
             integrity_check: true,
             interface: get_default_interface(),
             max_probes: None,
-            output_file_csv: None,
             packets: 1,
             probing_rate: 100,
             rate_limiting_method: RateLimitingMethod::Auto,
@@ -185,7 +181,6 @@ impl Display for Config {
         write!(f, " integrity_check={:?}", self.integrity_check)?;
         write!(f, " interface={:?}", self.interface)?;
         write!(f, " max_probes={:?}", self.max_probes)?;
-        write!(f, " output_file_csv={:?}", self.output_file_csv)?;
         write!(f, " packets={:?}", self.packets)?;
         write!(f, " probing_rate={:?}", self.probing_rate)?;
         write!(f, " rate_limiting_method={:?}", self.rate_limiting_method)?;

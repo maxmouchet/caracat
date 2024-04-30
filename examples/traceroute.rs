@@ -150,7 +150,9 @@ fn main() -> Result<()> {
                 } else {
                     None
                 };
-                let asn = irr.as_mut().and_then(|mut irr| lookup_as(&mut irr, reply.reply_src_addr));
+                let asn = irr
+                    .as_mut()
+                    .and_then(|mut irr| lookup_as(&mut irr, reply.reply_src_addr));
                 // TODO: Print [ASN*] only when -A is specified
                 // TODO: Print MPLS labels when -e is specified
                 // TODO: Do not print IP between parens if -n is specified

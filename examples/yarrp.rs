@@ -96,9 +96,6 @@ impl Iterator for ProbingSpace {
 #[derive(Parser, Debug)]
 #[command(author, version, long_about = None)]
 struct Args {
-    /// Output file (caracat CSV format).
-    #[arg(short = 'o', long, default_value_os_t = PathBuf::from("output.csv"))]
-    output: PathBuf,
     /// Probe type.
     #[arg(short = 't', long = "type", default_value_t = ProbeType::ICMP)]
     probe_type: ProbeType,
@@ -231,7 +228,6 @@ fn main() -> Result<()> {
         max_ttl: Some(args.maxttl),
         interface: args.interface,
         max_probes: args.count,
-        output_file_csv: Some(args.output),
         probing_rate: args.rate,
         ..Default::default()
     };

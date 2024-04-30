@@ -2,20 +2,15 @@
 use hyperloglog::HyperLogLog;
 
 use std::fmt::{Display, Formatter};
-use std::fs::File;
-use std::io::{stdout, BufWriter, Write};
+use std::io::{stdout, Write};
 
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 
 use log::{error, trace};
 
-use zstd::stream::write::Encoder as ZstdEncoder;
-
 use crate::receiver::Receiver;
-use crate::utilities::get_extension;
 
 // The pcap crate doesn't support `pcap_loop` and `pcap_breakloop`,
 // so we implement our own looping mechanism.
@@ -28,7 +23,6 @@ pub struct ReceiveLoop {
 impl ReceiveLoop {
     pub fn new(
         interface: String,
-        output_file_csv: Option<PathBuf>,
         instance_id: u16,
         extra_string: Option<String>,
         integrity_check: bool,
@@ -46,17 +40,7 @@ impl ReceiveLoop {
         let handle = thread::spawn(move || {
             let mut receiver = Receiver::new_batch(&interface).unwrap();
 
-            let output_csv: Box<dyn Write> = match output_file_csv {
-                None => Box::new(stdout().lock()),
-                Some(path) => {
-                    let file = File::create(&path).unwrap();
-                    let writer = BufWriter::new(file);
-                    match get_extension(&path).as_str() {
-                        "zst" => Box::new(ZstdEncoder::new(writer, 1).unwrap().auto_finish()),
-                        _ => Box::new(writer),
-                    }
-                }
-            };
+            let output_csv: Box<dyn Write> = Box::new(stdout().lock());
 
             let mut csv_writer = csv::WriterBuilder::new()
                 .has_headers(false) // TODO: Set to true, but how to serialize MPLS labels?

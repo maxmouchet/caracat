@@ -1,8 +1,7 @@
 //! An implementation of caracal CLI on top of caracat.
 //! See https://github.com/dioptra-io/caracal for the original tool.
 use std::fmt::Debug;
-use std::fs::File;
-use std::io::{stdin, BufRead, BufReader};
+use std::io::{stdin, BufRead};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -17,12 +16,6 @@ use rand::{thread_rng, Rng};
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// File containing the probes to send.
-    #[arg(short = 'i', long)]
-    input_file: Option<PathBuf>,
-    /// File to which the captured replies will be written.
-    #[arg(short = 'o', long)]
-    output_file_csv: Option<PathBuf>,
     /// Probing rate in packets per second.
     #[arg(short = 'r', long, default_value_t = 100)]
     probing_rate: u64,
@@ -79,16 +72,8 @@ fn main() -> Result<()> {
     configure_logger(args.log_level);
     exit_process_on_panic();
 
-    let input: Box<dyn BufRead> = match args.input_file {
-        Some(path) => {
-            let file = File::open(path)?;
-            Box::new(BufReader::new(file))
-        }
-        None => {
-            info!("Reading from stdin, press CTRL+D to stop...");
-            Box::new(stdin().lock())
-        }
-    };
+    info!("Reading from stdin, press CTRL+D to stop...");
+    let input: Box<dyn BufRead> = Box::new(stdin().lock());
 
     let config = Config {
         allowed_prefixes_file: args.allowed_prefixes_file,
@@ -102,7 +87,6 @@ fn main() -> Result<()> {
         integrity_check: !args.no_integrity_check,
         interface: args.interface,
         max_probes: args.max_probes,
-        output_file_csv: args.output_file_csv,
         packets: args.packets,
         probing_rate: args.probing_rate,
         rate_limiting_method: args.rate_limiting_method,

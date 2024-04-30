@@ -29,7 +29,6 @@ pnet = { version = "0.33.0", features = ["std"] }
 rand = { version = "0.8.5", features = ["small_rng"] }
 serde = { version = "1.0.163", features = ["derive"] }
 strum = { version = "0.24.1", features = ["derive"] }
-zstd = "0.12.3"
 
 [dev-dependencies]
 # These crates are only needed for running the examples.
@@ -41,8 +40,3 @@ libm = "0.2.7"
 permutation_iterator = "0.1.2"
 regex = "1.8.3"
 rpsl = "0.1.0-rc.1"
-
-[features]
-# Build zstd by using host libraries instead of the sources bundled with the zstd crate.
-# This is currently used by the Nix flake, for which the bundled sources cannot be used.
-pkg-config = ["zstd/pkg-config"]
