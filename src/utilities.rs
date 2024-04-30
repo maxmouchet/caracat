@@ -49,7 +49,7 @@ pub fn get_ipv4_address(interface: &str) -> Option<Ipv4Addr> {
 
 /// Return the preferred IPv6 address for the device.
 pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
-    let addresses: Vec<Ipv6Addr> = get_device(interface)?
+    let mut addresses: Vec<Ipv6Addr> = get_device(interface)?
         .addresses
         .iter()
         .filter(|addr| addr.addr.is_ipv6())
@@ -59,7 +59,9 @@ pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
         })
         .collect();
     // Prefer Internet-routable addresses over loopback over private over link-local.
-    // TODO: The following line requires Rust nightly:
+    // TODO: Temporary hack to prefer GUAs over other kind of addresses.
+    //       The proper solution below requires Rust nightly.
+    addresses.sort_by_key(|addr| { addr.octets()[0] & 0b11100000 == 0b00100000 });
     // addresses.sort_by_key(|addr| {
     //     (
     //         addr.is_global(),
