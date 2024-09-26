@@ -91,6 +91,10 @@ impl Route {
         }
 
         let gateway = IpAddr::from_str(elems[1].split('%').next().unwrap())?;
+        let flags = elems[2];
+        if flags.contains('I') {
+            bail!("ifscoped entry")
+        }
         let interface = elems[3].to_string();
         let network = if elems[0] == "default" {
             let addr = if gateway.is_ipv4() {

@@ -24,7 +24,8 @@ pub struct Sender {
     instance_id: u16,
     l2_protocol: L2,
     src_mac: MacAddr,
-    dst_mac: MacAddr,
+    dst_mac_v4: MacAddr,
+    dst_mac_v6: MacAddr,
     src_ip_v4: Ipv4Addr,
     src_ip_v6: Ipv6Addr,
 }
@@ -50,28 +51,39 @@ impl Sender {
         };
 
         let src_mac: MacAddr;
-        let dst_mac: MacAddr;
-        // TODO: dst_mac_{v4,v6}
+        let dst_mac_v4: MacAddr;
+        let dst_mac_v6: MacAddr;
 
         if l2_protocol == L2::Ethernet {
             src_mac = get_mac_address(interface).context("Ethernet device has no MAC address")?;
             let table = RoutingTable::from_native()?;
-            let route = table
-                .get(IpAddr::V4(Ipv4Addr::new(192, 0, 2, 0)))
-                .context("No route for 192.0.2.0")?;
-            dst_mac = resolve_mac_address(interface, route.gateway)?;
+            let ipv4_route = table
+                .get(IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8)))
+                .context("No route for 8.8.8.8")?;
+            let ipv6_route = table
+                .get(IpAddr::V6(Ipv6Addr::new(
+                    0x2001, 0x4860, 0x4860, 0, 0, 0, 0, 0x8888,
+                )))
+                .context("No route for 2001:4860:4860::8888")?;
+            // TODO: Warn if not v4 or v6 dst MAC.
+            dst_mac_v4 =
+                resolve_mac_address(interface, ipv4_route.gateway).unwrap_or(MacAddr::zero());
+            dst_mac_v6 =
+                resolve_mac_address(interface, ipv6_route.gateway).unwrap_or(MacAddr::zero());
         } else {
             src_mac = MacAddr::zero();
-            dst_mac = MacAddr::zero();
+            dst_mac_v4 = MacAddr::zero();
+            dst_mac_v6 = MacAddr::zero();
         }
 
         let src_ip_v4 = get_ipv4_address(interface).unwrap_or(Ipv4Addr::UNSPECIFIED);
         let src_ip_v6 = get_ipv6_address(interface).unwrap_or(Ipv6Addr::UNSPECIFIED);
 
         info!(
-            "src_mac={} dst_mac={}",
+            "src_mac={} dst_mac_v4={} dst_mac_v6={}",
             src_mac.to_string(),
-            dst_mac.to_string()
+            dst_mac_v4.to_string(),
+            dst_mac_v6.to_string()
         );
         info!("src_ip_v4={} src_ip_v6={}", src_ip_v4, src_ip_v6);
 
@@ -82,7 +94,8 @@ impl Sender {
             instance_id,
             l2_protocol,
             src_mac,
-            dst_mac,
+            dst_mac_v4,
+            dst_mac_v6,
             src_ip_v4,
             src_ip_v6,
         })
@@ -109,7 +122,10 @@ impl Sender {
 
         match self.l2_protocol {
             L2::BSDLoopback => build_loopback(&mut packet),
-            L2::Ethernet => build_ethernet(&mut packet, self.src_mac, self.dst_mac),
+            L2::Ethernet => match probe.dst_addr {
+                IpAddr::V4(_) => build_ethernet(&mut packet, self.src_mac, self.dst_mac_v4),
+                IpAddr::V6(_) => build_ethernet(&mut packet, self.src_mac, self.dst_mac_v6),
+            },
             L2::None => {}
         }
 
