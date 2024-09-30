@@ -57,13 +57,15 @@ impl Sender {
         if l2_protocol == L2::Ethernet {
             src_mac = get_mac_address(interface).context("Ethernet device has no MAC address")?;
             let table = RoutingTable::from_native()?;
-            let ipv4_route = table.default_route_v4().context("No IPv4 default route")?;
-            let ipv6_route = table.default_route_v6().context("No IPv6 default route")?;
-            // TODO: Warn if not v4 or v6 dst MAC.
-            dst_mac_v4 =
-                resolve_mac_address(interface, ipv4_route.gateway).unwrap_or(MacAddr::zero());
-            dst_mac_v6 =
-                resolve_mac_address(interface, ipv6_route.gateway).unwrap_or(MacAddr::zero());
+            // TODO: Warn if no v4 or v6 dst MAC.
+            dst_mac_v4 = table
+                .default_route_v4()
+                .and_then(|r| resolve_mac_address(interface, r.gateway).ok())
+                .unwrap_or(MacAddr::zero());
+            dst_mac_v6 = table
+                .default_route_v6()
+                .and_then(|r| resolve_mac_address(interface, r.gateway).ok())
+                .unwrap_or(MacAddr::zero());
         } else {
             src_mac = MacAddr::zero();
             dst_mac_v4 = MacAddr::zero();
