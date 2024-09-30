@@ -59,6 +59,16 @@ impl RoutingTable {
         Ok(RoutingTable::new(routes))
     }
 
+    pub fn default_route_v4(&self) -> Option<&Route> {
+        self.table
+            .exact_match(IpNetwork::new(Ipv4Addr::UNSPECIFIED, 0).unwrap())
+    }
+
+    pub fn default_route_v6(&self) -> Option<&Route> {
+        self.table
+            .exact_match(IpNetwork::new(Ipv6Addr::UNSPECIFIED, 0).unwrap())
+    }
+
     pub fn get(&self, destination: IpAddr) -> Option<&Route> {
         self.table
             .longest_match(destination)

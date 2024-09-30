@@ -14,9 +14,18 @@ use log::LevelFilter;
 use pcap::Device;
 use pnet::datalink::MacAddr;
 
-/// Return the default device name (according to pcap).
+use crate::neighbors::RoutingTable;
+
+/// Return the interface carrying the default route, if any.
 pub fn get_default_interface() -> String {
-    Device::lookup().unwrap().unwrap().name
+    if let Ok(table) = RoutingTable::from_native() {
+        if let Some(route) = table.default_route_v4() {
+            return route.interface.clone();
+        } else if let Some(route) = table.default_route_v6() {
+            return route.interface.clone();
+        }
+    }
+    "".to_string()
 }
 
 /// Return the pcap device for the given interface.
