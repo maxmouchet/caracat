@@ -41,7 +41,7 @@ fn get_device(interface: &str) -> Option<Device> {
 
 /// Return the preferred IPv4 address for the device.
 pub fn get_ipv4_address(interface: &str) -> Option<Ipv4Addr> {
-    let addresses: Vec<Ipv4Addr> = get_device(interface)?
+    let mut addresses: Vec<Ipv4Addr> = get_device(interface)?
         .addresses
         .iter()
         .filter(|addr| addr.addr.is_ipv4())
@@ -51,9 +51,9 @@ pub fn get_ipv4_address(interface: &str) -> Option<Ipv4Addr> {
         })
         .collect();
     // Prefer Internet-routable addresses over loopback over private unicast.
-    // TODO: The following line requires Rust nightly:
-    // addresses.sort_by_key(|addr| (addr.is_global(), addr.is_loopback(), addr.is_private()));
-    addresses.last().copied()
+    // TODO: use `is_global()` when stabilized.
+    addresses.sort_by_key(|addr| addr.is_private());
+    addresses.first().copied()
 }
 
 /// Return the preferred IPv6 address for the device.
@@ -70,7 +70,9 @@ pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
     // Prefer Internet-routable addresses over loopback over private over link-local.
     // TODO: Temporary hack to prefer GUAs over other kind of addresses.
     //       The proper solution below requires Rust nightly.
+    // TODO: Prefer ULA over link-local?
     addresses.sort_by_key(|addr| addr.octets()[0] & 0b11100000 == 0b00100000);
+    println!("{:?}", addresses);
     // addresses.sort_by_key(|addr| {
     //     (
     //         addr.is_global(),

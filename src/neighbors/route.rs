@@ -11,7 +11,8 @@ use ip_network_table::IpNetworkTable;
 /// Path to the netstat binary.
 pub const DEFAULT_NETSTAT_BINARY: &str = "/usr/sbin/netstat";
 /// Path to the routing table in procfs.
-pub const DEFAULT_PROCFS_ROUTE: &str = "/proc/net/route";
+pub const DEFAULT_PROCFS_ROUTE_V4: &str = "/proc/net/route";
+pub const DEFAULT_PROCFS_ROUTE_V6: &str = "/proc/net/ipv6_route";
 
 /// A routing table.
 pub struct RoutingTable {
@@ -30,7 +31,7 @@ impl RoutingTable {
     /// Build a routing table by using netstat or procfs depending on the operating system.
     pub fn from_native() -> Result<Self> {
         if cfg!(target_os = "linux") {
-            Self::from_procfs(DEFAULT_PROCFS_ROUTE)
+            Self::from_procfs(DEFAULT_PROCFS_ROUTE_V4, DEFAULT_PROCFS_ROUTE_V6)
         } else {
             Self::from_netstat(DEFAULT_NETSTAT_BINARY)
         }
@@ -53,9 +54,12 @@ impl RoutingTable {
     }
 
     /// Build a routing table by parsing procfs on Linux.
-    pub fn from_procfs(path: &str) -> Result<Self> {
-        let output = fs::read_to_string(path)?;
-        let routes: Vec<Route> = output.lines().flat_map(Route::from_procfs_entry).collect();
+    pub fn from_procfs(ipv4_path: &str, ipv6_path: &str) -> Result<Self> {
+        let output_v4 = fs::read_to_string(ipv4_path)?;
+        let output_v6 = fs::read_to_string(ipv6_path)?;
+        let routes_v4 = output_v4.lines().flat_map(Route::from_procfs_entry_v4);
+        let routes_v6 = output_v6.lines().flat_map(Route::from_procfs_entry_v6);
+        let routes: Vec<Route> = routes_v4.chain(routes_v6).collect();
         Ok(RoutingTable::new(routes))
     }
 
@@ -128,12 +132,11 @@ impl Route {
         })
     }
 
-    pub fn from_procfs_entry(line: &str) -> Result<Self> {
+    pub fn from_procfs_entry_v4(line: &str) -> Result<Self> {
         let elems: Vec<&str> = line.split_whitespace().collect();
         if elems.len() < 8 {
             bail!("invalid entry")
         }
-        // TODO: IPv6
         let iface = elems[0].to_string();
         let destination = Ipv4Addr::from(u32::from_str_radix(elems[1], 16)?.to_be());
         let gateway = Ipv4Addr::from(u32::from_str_radix(elems[2], 16)?.to_be());
@@ -141,6 +144,26 @@ impl Route {
         Ok(Self {
             network: IpNetwork::new(destination, masklen)?,
             gateway: IpAddr::V4(gateway),
+            interface: iface,
+        })
+    }
+
+    pub fn from_procfs_entry_v6(line: &str) -> Result<Self> {
+        let elems: Vec<&str> = line.split_whitespace().collect();
+        if elems.len() < 10 {
+            bail!("invalid entry")
+        }
+        println!("{:?}", line);
+        let iface = elems[9].to_string();
+        let destination = Ipv6Addr::from(u128::from_str_radix(elems[0], 16)?);
+        let gateway = Ipv6Addr::from(u128::from_str_radix(elems[4], 16)?);
+        let masklen = u32::from_str_radix(elems[1], 16)? as u8;
+        println!("{:?}", gateway);
+        println!("{:?}", destination);
+        println!("{:?}", masklen);
+        Ok(Self {
+            network: IpNetwork::new(destination, masklen)?,
+            gateway: IpAddr::V6(gateway),
             interface: iface,
         })
     }
