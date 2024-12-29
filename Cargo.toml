@@ -1,6 +1,6 @@
 [package]
 name = "caracat"
-version = "1.0.0"
+version = "1.2.0"
 description = "A fast ICMP/UDP IPv4/v6 Paris traceroute and ping engine."
 repository = "https://github.com/maxmouchet/caracat"
 license = "MIT"
