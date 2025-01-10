@@ -2,6 +2,7 @@
 //! See https://github.com/dioptra-io/caracal for the original tool.
 use std::fmt::Debug;
 use std::io::{stdin, BufRead};
+use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -22,6 +23,12 @@ struct Args {
     /// Interface from which to send the packets.
     #[arg(short = 'z', long, default_value_t = get_default_interface())]
     interface: String,
+    //// Specify the IPv4 source address to use in the packets (if probing in v4)
+    #[arg(long)]
+    source_address_v4: Option<Ipv4Addr>,
+    //// Specify the IPv6 source address to use in the packets (if probing in v6)
+    #[arg(long)]
+    source_address_v6: Option<Ipv6Addr>,
     /// Number of probes to send before calling the rate limiter.
     #[arg(short = 'B', long, default_value_t = 128)]
     batch_size: u64,
@@ -86,6 +93,8 @@ fn main() -> Result<()> {
         max_ttl: args.max_ttl,
         integrity_check: !args.no_integrity_check,
         interface: args.interface,
+        src_ipv4_addr: args.source_address_v4,
+        src_ipv6_addr: args.source_address_v6,
         max_probes: args.max_probes,
         packets: args.packets,
         probing_rate: args.probing_rate,

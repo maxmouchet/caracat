@@ -33,7 +33,13 @@ pub struct Sender {
 impl Sender {
     // TODO: Parameter for gateway resolution address.
     //       Accept gateway MAC address and do resolution upstream?
-    pub fn new(interface: &str, instance_id: u16, dry_run: bool) -> Result<Self> {
+    pub fn new(
+        interface: &str,
+        ipv4_src_addr: Option<Ipv4Addr>,
+        ipv6_src_addr: Option<Ipv6Addr>,
+        instance_id: u16,
+        dry_run: bool,
+    ) -> Result<Self> {
         let handle = pcap::Capture::from_device(interface)?
             .buffer_size(0)
             .snaplen(0)
@@ -72,8 +78,8 @@ impl Sender {
             dst_mac_v6 = MacAddr::zero();
         }
 
-        let src_ip_v4 = get_ipv4_address(interface).unwrap_or(Ipv4Addr::UNSPECIFIED);
-        let src_ip_v6 = get_ipv6_address(interface).unwrap_or(Ipv6Addr::UNSPECIFIED);
+        let src_ip_v4 = get_ipv4_address(interface, ipv4_src_addr).unwrap_or(Ipv4Addr::UNSPECIFIED);
+        let src_ip_v6 = get_ipv6_address(interface, ipv6_src_addr).unwrap_or(Ipv6Addr::UNSPECIFIED);
 
         info!(
             "src_mac={} dst_mac_v4={} dst_mac_v6={}",

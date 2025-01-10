@@ -13,6 +13,7 @@
 //! ```
 use std::fmt::{Display, Formatter};
 use std::io::Read;
+use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
 use std::thread::sleep;
 use std::time::Duration;
@@ -70,7 +71,13 @@ pub fn probe<T: Iterator<Item = Probe>>(
         allowed_prefixes,
         blocked_prefixes,
         rate_limiter,
-        Sender::new(&config.interface, config.instance_id, config.dry_run)?,
+        Sender::new(
+            &config.interface,
+            config.src_ipv4_addr,
+            config.src_ipv6_addr,
+            config.instance_id,
+            config.dry_run,
+        )?,
     );
     let prober_statistics = prober.statistics().clone();
 
@@ -134,6 +141,10 @@ pub struct Config {
     pub integrity_check: bool,
     /// Interface from which to send the packets.
     pub interface: String,
+    /// Source IPv4 address
+    pub src_ipv4_addr: Option<Ipv4Addr>,
+    /// Source IPv6 address
+    pub src_ipv6_addr: Option<Ipv6Addr>,
     /// Maximum number of probes to send (unlimited by default).
     pub max_probes: Option<u64>,
     /// Number of packets to send per probe.
@@ -159,6 +170,8 @@ impl Default for Config {
             max_ttl: None,
             integrity_check: true,
             interface: get_default_interface(),
+            src_ipv4_addr: None,
+            src_ipv6_addr: None,
             max_probes: None,
             packets: 1,
             probing_rate: 100,

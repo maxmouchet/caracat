@@ -21,7 +21,7 @@ use crate::utilities::{get_ipv6_address, get_mac_address};
 /// This function will timeout after 1s if no replies are received.
 pub fn resolve_mac_address_v6(interface: &str, addr: Ipv6Addr) -> Result<MacAddr> {
     let src_mac = get_mac_address(interface).context("Interface has no MAC address")?;
-    let src_ip = get_ipv6_address(interface).context("Interface has no IPv6 address")?;
+    let src_ip = get_ipv6_address(interface, None).context("Interface has no IPv6 address")?;
     let mut buffer = [0u8; EthernetPacket::minimum_packet_size()
         + Ipv6Packet::minimum_packet_size()
         + NeighborSolicitPacket::minimum_packet_size()];

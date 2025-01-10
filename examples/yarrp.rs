@@ -203,10 +203,6 @@ fn main() -> Result<()> {
         bail!("--sequential is not implemented")
     }
 
-    if args.srcaddr.is_some() {
-        bail!("--srcaddr is not implemented (determined automatically by caracat)")
-    }
-
     if args.srcmac.is_some() {
         bail!("--srcmac is not implemented (determined automatically by caracat)")
     }
@@ -227,6 +223,8 @@ fn main() -> Result<()> {
         min_ttl: Some(args.minttl),
         max_ttl: Some(args.maxttl),
         interface: args.interface,
+        src_ipv4_addr: args.srcaddr,
+        src_ipv6_addr: None,
         max_probes: args.count,
         probing_rate: args.rate,
         ..Default::default()
