@@ -1,8 +1,0 @@
-# Format: dst_ip,src_port,dst_port,protocol[,wait]
-#
-# ICMP (Echo Request) probe towards 8.8.8.8 with a TTL of 32.
-# The "source port" (24000) will be encoded in the ICMP checksum field.
-# The "destination port" (33434) will be ignored.
-8.8.8.8,24000,33434,32,icmp
-# Same for IPv6:
-2001:4860:4860::8888,24000,33434,32,icmp6
