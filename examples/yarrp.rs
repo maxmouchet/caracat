@@ -5,7 +5,7 @@
 use caracat::rate_limiter::RateLimiter;
 use std::fs::File;
 use std::io::{BufRead, BufReader, BufWriter, Write};
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
@@ -122,7 +122,10 @@ struct Args {
     seed: Option<u64>,
     /// Source address of probes [default: auto].
     #[arg(short = 'a', long)]
-    srcaddr: Option<Ipv4Addr>,
+    srcaddr4: Option<Ipv4Addr>,
+    /// Source v6 address of probes [default: auto].
+    #[arg(long)]
+    srcaddr6: Option<Ipv6Addr>,
     /// Transport dst port.
     #[arg(short = 'p', long, default_value_t = 80)]
     port: u16,
@@ -221,10 +224,6 @@ fn main() -> Result<()> {
         bail!("--sequential is not implemented")
     }
 
-    if args.srcaddr.is_some() {
-        bail!("--srcaddr is not implemented (determined automatically by caracat)")
-    }
-
     if args.srcmac.is_some() {
         bail!("--srcmac is not implemented (determined automatically by caracat)")
     }
@@ -274,7 +273,13 @@ fn main() -> Result<()> {
     }
 
     let mut rate_limiter = RateLimiter::new(args.rate, 1, RateLimitingMethod::Auto);
-    let mut sender = Sender::new(&args.interface, args.instance, false)?;
+    let mut sender = Sender::new(
+        &args.interface,
+        args.srcaddr4,
+        args.srcaddr6,
+        args.instance,
+        false,
+    )?;
     let mut receiver = Receiver::new_batch(&args.interface)?;
 
     // TODO: Simpler solution to signal the receive thread to stop?

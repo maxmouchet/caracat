@@ -13,7 +13,7 @@ Versions > 1.0.0 might break this compatibility to fix some idiosyncrasies inher
 Multiple example binaries are provided:
 ```bash
 # Traceroute tool
-cargo run --example traceoute -- --help
+cargo run --example traceroute -- --help
 # Implementation of yarrp
 cargo run --example yarrp -- --help
 ```
