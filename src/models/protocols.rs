@@ -1,11 +1,9 @@
 use pnet::packet::ethernet::{EtherType, EtherTypes};
 use pnet::packet::ip::{IpNextHeaderProtocol, IpNextHeaderProtocols};
 use serde::{Deserialize, Serialize};
-use strum::Display;
 
 /// Layer 2 protocol.
-#[derive(Copy, Clone, Debug, Display, PartialEq)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum L2 {
     /// 4-byte BSD Loopback header (e.g. lo0 on macOS).
     BSDLoopback,
@@ -16,8 +14,7 @@ pub enum L2 {
 }
 
 /// Layer 3 protocol.
-#[derive(Copy, Clone, Debug, Display, PartialEq)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum L3 {
     IPv4,
     IPv6,
@@ -33,15 +30,10 @@ impl From<L3> for EtherType {
 }
 
 /// Layer 4 protocol.
-#[derive(Copy, Clone, Debug, Display, PartialEq, Serialize, Deserialize)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum L4 {
-    // We rename the fields to keep the input format compatible with the C++ version.
-    #[serde(rename = "icmp")]
     ICMP,
-    #[serde(rename = "icmp6")]
     ICMPv6,
-    #[serde(rename = "udp")]
     UDP,
 }
 

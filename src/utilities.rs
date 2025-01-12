@@ -1,16 +1,6 @@
 //! Utilities.
-use anyhow::Result;
-use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
-use std::path::PathBuf;
-use std::str::FromStr;
-use std::{panic, process};
 
-use chrono::Utc;
-use ip_network::IpNetwork;
-use ip_network_table::IpNetworkTable;
-use log::LevelFilter;
 use pcap::Device;
 use pnet::datalink::MacAddr;
 
@@ -90,51 +80,4 @@ pub fn get_mac_address(interface: &str) -> Option<MacAddr> {
         .into_iter()
         .find(|iface| iface.name == interface)
         .and_then(|iface| iface.mac)
-}
-
-pub fn prefix_filter_from_file(path: &PathBuf) -> Result<IpNetworkTable<()>> {
-    let mut tree = IpNetworkTable::new();
-    let reader = BufReader::new(File::open(path)?);
-    // TODO: Remove calls to unwrap.
-    #[allow(clippy::lines_filter_map_ok)]
-    reader
-        .lines()
-        .flat_map(|line| line.ok())
-        .filter(|line| !line.starts_with('#'))
-        .flat_map(|line| {
-            // If there are multiple columns, take only the first one.
-            // e.g. pyasn or bgp.potaroo.net format.
-            line.split_whitespace()
-                .next()
-                .and_then(|s| IpNetwork::from_str(s).ok())
-        })
-        .for_each(|network| tree.insert(network, ()).unwrap());
-    Ok(tree)
-}
-
-/// Exit the whole process when a thread panic.
-/// This is in until we find a better way to handle errors in the receive loop.
-pub fn exit_process_on_panic() {
-    // https://stackoverflow.com/questions/35988775/how-can-i-cause-a-panic-on-a-thread-to-immediately-end-the-main-thread
-    let orig_hook = panic::take_hook();
-    panic::set_hook(Box::new(move |panic_info| {
-        orig_hook(panic_info);
-        process::exit(1);
-    }));
-}
-
-/// Initialize the logger.
-pub fn configure_logger(level: LevelFilter) {
-    env_logger::builder()
-        .filter(None, level)
-        .format(|buf, record| {
-            writeln!(
-                buf,
-                "[{}] [{}] {}",
-                Utc::now().format("%Y-%m-%d %H:%M:%S%.3f"),
-                record.level().to_string().to_lowercase(),
-                record.args(),
-            )
-        })
-        .init();
 }
