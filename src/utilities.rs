@@ -50,6 +50,7 @@ pub fn get_ipv4_address(interface: &str) -> Option<Ipv4Addr> {
             _ => unreachable!(),
         })
         .collect();
+
     // Prefer Internet-routable addresses over loopback over private unicast.
     // TODO: The following line requires Rust nightly:
     // addresses.sort_by_key(|addr| (addr.is_global(), addr.is_loopback(), addr.is_private()));
@@ -67,6 +68,7 @@ pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
             _ => unreachable!(),
         })
         .collect();
+
     // Prefer Internet-routable addresses over loopback over private over link-local.
     // TODO: Temporary hack to prefer GUAs over other kind of addresses.
     //       The proper solution below requires Rust nightly.

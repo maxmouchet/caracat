@@ -5,7 +5,7 @@
 //! Run with `cargo run --example yarrp -- --help`.
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, Ipv6Addr};
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -113,7 +113,10 @@ struct Args {
     seed: Option<u64>,
     /// Source address of probes [default: auto].
     #[arg(short = 'a', long)]
-    srcaddr: Option<Ipv4Addr>,
+    srcaddr4: Option<Ipv4Addr>,
+    /// Source v6 address of probes [default: auto].
+    #[arg(long)]
+    srcaddr6: Option<Ipv6Addr>,
     /// Transport dst port.
     #[arg(short = 'p', long, default_value_t = 80)]
     port: u16,
@@ -203,10 +206,6 @@ fn main() -> Result<()> {
         bail!("--sequential is not implemented")
     }
 
-    if args.srcaddr.is_some() {
-        bail!("--srcaddr is not implemented (determined automatically by caracat)")
-    }
-
     if args.srcmac.is_some() {
         bail!("--srcmac is not implemented (determined automatically by caracat)")
     }
@@ -227,6 +226,8 @@ fn main() -> Result<()> {
         min_ttl: Some(args.minttl),
         max_ttl: Some(args.maxttl),
         interface: args.interface,
+        src_ipv4_addr: args.srcaddr4,
+        src_ipv6_addr: args.srcaddr6,
         max_probes: args.count,
         probing_rate: args.rate,
         ..Default::default()
