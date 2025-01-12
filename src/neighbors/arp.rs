@@ -13,7 +13,7 @@ use crate::utilities::{get_ipv4_address, get_mac_address};
 /// This function will timeout after 1s if no replies are received.
 pub fn resolve_mac_address_v4(interface: &str, addr: Ipv4Addr) -> Result<MacAddr> {
     let src_mac = get_mac_address(interface).context("Interface has no MAC address")?;
-    let src_ip = get_ipv4_address(interface, None).context("Interface has no IPv4 address")?;
+    let src_ip = get_ipv4_address(interface).context("Interface has no IPv4 address")?;
     let mut buffer =
         [0u8; EthernetPacket::minimum_packet_size() + ArpPacket::minimum_packet_size()];
     build_arp_packet(&mut buffer, src_mac, src_ip, addr);

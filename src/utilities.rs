@@ -40,7 +40,7 @@ fn get_device(interface: &str) -> Option<Device> {
 }
 
 /// Return the preferred IPv4 address for the device.
-pub fn get_ipv4_address(interface: &str, ipv4_src_addr: Option<Ipv4Addr>) -> Option<Ipv4Addr> {
+pub fn get_ipv4_address(interface: &str) -> Option<Ipv4Addr> {
     let addresses: Vec<Ipv4Addr> = get_device(interface)?
         .addresses
         .iter()
@@ -54,19 +54,11 @@ pub fn get_ipv4_address(interface: &str, ipv4_src_addr: Option<Ipv4Addr>) -> Opt
     // Prefer Internet-routable addresses over loopback over private unicast.
     // TODO: The following line requires Rust nightly:
     // addresses.sort_by_key(|addr| (addr.is_global(), addr.is_loopback(), addr.is_private()));
-
-    // If the user has specified an address, use it if it is in the list of addresses.
-    if let Some(ipv4_src_addr) = ipv4_src_addr {
-        if addresses.contains(&ipv4_src_addr) {
-            return Some(ipv4_src_addr);
-        }
-    }
-
     addresses.last().copied()
 }
 
 /// Return the preferred IPv6 address for the device.
-pub fn get_ipv6_address(interface: &str, ipv6_src_addr: Option<Ipv6Addr>) -> Option<Ipv6Addr> {
+pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
     let mut addresses: Vec<Ipv6Addr> = get_device(interface)?
         .addresses
         .iter()
@@ -89,14 +81,6 @@ pub fn get_ipv6_address(interface: &str, ipv6_src_addr: Option<Ipv6Addr>) -> Opt
     //         addr.is_unicast_link_local(),
     //     )
     // });
-
-    // If the user has specified an address, use it if it is in the list of addresses.
-    if let Some(ipv6_src_addr) = ipv6_src_addr {
-        if addresses.contains(&ipv6_src_addr) {
-            return Some(ipv6_src_addr);
-        }
-    }
-
     addresses.last().copied()
 }
 
