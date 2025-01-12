@@ -23,7 +23,7 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
     );
 
     let mut reply = Reply {
-        capture_timestamp: capture_timestamp.as_micros() as u64,
+        capture_timestamp,
         ..Default::default()
     };
 

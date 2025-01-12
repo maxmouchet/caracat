@@ -14,9 +14,7 @@ Multiple example binaries are provided:
 ```bash
 # Traceroute tool
 cargo run --example traceoute -- --help
-# Implementation of caracal command-line interface
-cargo run --example caracal -- --help
-# (Partial) implementation of yarrp
+# Implementation of yarrp
 cargo run --example yarrp -- --help
 ```
 

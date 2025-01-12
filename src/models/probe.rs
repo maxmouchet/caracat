@@ -1,4 +1,3 @@
-use std::fmt::{Display, Formatter};
 use std::net::IpAddr;
 
 use serde::{Deserialize, Serialize};
@@ -14,16 +13,6 @@ pub struct Probe {
     pub dst_port: u16,
     pub ttl: u8,
     pub protocol: L4,
-}
-
-impl Display for Probe {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "dst_addr={}", self.dst_addr)?;
-        write!(f, " src_port={}", self.src_port)?;
-        write!(f, " dst_port={}", self.dst_port)?;
-        write!(f, " ttl={}", self.ttl)?;
-        write!(f, " protocol={}", self.protocol)
-    }
 }
 
 impl Probe {

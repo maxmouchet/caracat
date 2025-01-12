@@ -91,7 +91,6 @@ struct Args {
 }
 
 fn main() -> Result<()> {
-    // This uses a lower-level interface than caracat::easy used by the caracal and yarrp examples.
     let args = Args::parse();
 
     let instance_id = thread_rng().gen_range(0..u16::MAX);

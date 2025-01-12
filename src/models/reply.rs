@@ -1,5 +1,5 @@
-use std::fmt::{Display, Formatter};
 use std::net::{IpAddr, Ipv6Addr};
+use std::time::Duration;
 
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::{icmp, icmpv6};
@@ -26,8 +26,8 @@ pub struct MPLSLabel {
 #[derive(Debug, Serialize)]
 pub struct Reply {
     // * Capture attributes *
-    /// The capture timestamp in microseconds.
-    pub capture_timestamp: u64,
+    /// The capture timestamp.
+    pub capture_timestamp: Duration,
     // * Reply attributes (IP) *
     /// The source IP of the reply packet.
     pub reply_src_addr: IpAddr,
@@ -74,15 +74,12 @@ pub struct Reply {
     // * Estimated attributes *
     /// The estimated round-trip time, in tenth of milliseconds.
     pub rtt: u16,
-    // * Extra attributes *
-    /// An extra string that is appended at the end of the reply.
-    pub extra: Option<String>,
 }
 
 impl Default for Reply {
     fn default() -> Self {
         Reply {
-            capture_timestamp: 0,
+            capture_timestamp: Duration::default(),
             reply_src_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             reply_dst_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             reply_id: 0,
@@ -101,33 +98,7 @@ impl Default for Reply {
             probe_dst_port: 0,
             probe_ttl: 0,
             rtt: 0,
-            extra: None,
         }
-    }
-}
-
-impl Display for Reply {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "capture_timestamp={}", self.capture_timestamp)?;
-        write!(f, " reply_src_addr={}", self.reply_src_addr)?;
-        write!(f, " reply_dst_addr={}", self.reply_dst_addr)?;
-        write!(f, " reply_ttl={}", self.reply_ttl)?;
-        write!(f, " reply_protocol={}", self.reply_protocol)?;
-        write!(f, " reply_icmp_code={}", self.reply_icmp_code)?;
-        write!(f, " reply_icmp_type={}", self.reply_icmp_type)?;
-        // for (const auto& mpls_label : self.reply_mpls_labels) {
-        //     write!(f, "reply_mpls_label={}", mpls_label_to_csv(mpls_label))?;
-        // }
-        write!(f, " probe_id={}", self.probe_id)?;
-        write!(f, " probe_size={}", self.probe_size)?;
-        write!(f, " probe_protocol={}", self.probe_protocol)?;
-        write!(f, " probe_ttl={}", self.probe_ttl)?;
-        write!(f, " probe_dst_addr={}", self.probe_dst_addr)?;
-        write!(f, " probe_src_port={}", self.probe_src_port)?;
-        write!(f, " probe_dst_port={}", self.probe_dst_port)?;
-        write!(f, " quoted_ttl={}", self.quoted_ttl)?;
-        write!(f, " rtt={}", self.rtt as f64 / 10.0)?;
-        Ok(())
     }
 }
 
