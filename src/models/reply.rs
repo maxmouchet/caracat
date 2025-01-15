@@ -50,8 +50,9 @@ pub struct Reply {
     /// MPLS labels contained in the ICMP extension.
     pub reply_mpls_labels: Vec<MPLSLabel>,
     // * Probe attributes (IP → ICMP → IP) *
+    /// The source IP of the probe packet.
+    pub probe_src_addr: IpAddr,
     /// The IP that was targeted by the probe.
-    /// If we received a reply from this IP then `reply_src_addr == probe_dst_addr`.
     pub probe_dst_addr: IpAddr,
     /// The ID field of the probe packet (0 for IPv6).
     pub probe_id: u16,
@@ -89,6 +90,7 @@ impl Default for Reply {
             reply_icmp_type: 0,
             reply_icmp_code: 0,
             reply_mpls_labels: vec![],
+            probe_src_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             probe_dst_addr: IpAddr::V6(Ipv6Addr::UNSPECIFIED),
             probe_id: 0,
             probe_size: 0,

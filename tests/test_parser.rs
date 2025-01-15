@@ -48,6 +48,10 @@ fn test_icmp_icmp_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 11);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("192.168.1.5").unwrap()
+    );
     assert_eq!(reply.probe_dst_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(reply.probe_size, 36);
     assert_eq!(reply.probe_ttl, 6);
@@ -103,6 +107,10 @@ fn test_icmp_icmp_ttl_exceeded_mpls() {
     // assert_eq!(reply.reply_mpls_labels[0], label_1);
     // assert_eq!(reply.reply_mpls_labels[1], label_2);
     assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("132.227.123.8").unwrap()
+    );
+    assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("65.83.239.127").unwrap()
     );
@@ -142,6 +150,10 @@ fn test_icmp_icmp_echo_reply() {
     assert_eq!(reply.reply_icmp_type, 0);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("192.168.1.5").unwrap()
+    );
     assert_eq!(reply.probe_dst_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(reply.probe_size, 0);
     assert_eq!(reply.probe_ttl, 10);
@@ -179,6 +191,10 @@ fn test_icmp6_icmp6_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 3);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap()
+    );
     assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()
@@ -220,6 +236,10 @@ fn test_icmp6_icmp6_echo_reply() {
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
     assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap()
+    );
+    assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()
     );
@@ -259,6 +279,10 @@ fn test_udp_icmp_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 11);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("192.168.1.5").unwrap()
+    );
     assert_eq!(reply.probe_dst_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(reply.probe_size, 36);
     assert_eq!(reply.probe_ttl, 6);
@@ -296,6 +320,10 @@ fn test_udp_icmp6_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 3);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap()
+    );
     assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()
