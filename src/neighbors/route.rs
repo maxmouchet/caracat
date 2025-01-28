@@ -153,14 +153,17 @@ impl Route {
         if elems.len() < 10 {
             bail!("invalid entry")
         }
-        println!("{:?}", line);
         let iface = elems[9].to_string();
         let destination = Ipv6Addr::from(u128::from_str_radix(elems[0], 16)?);
         let gateway = Ipv6Addr::from(u128::from_str_radix(elems[4], 16)?);
         let masklen = u32::from_str_radix(elems[1], 16)? as u8;
-        println!("{:?}", gateway);
-        println!("{:?}", destination);
-        println!("{:?}", masklen);
+        let flags = u32::from_str_radix(elems[8], 16)?;
+        // TODO: Proper flag parsing.
+        let is_usable = flags & 0x0001 == 1;
+        let is_gateway = flags & 0x0002 == 2;
+        if !is_usable || !is_gateway {
+            bail!("ignoring entry")
+        }
         Ok(Self {
             network: IpNetwork::new(destination, masklen)?,
             gateway: IpAddr::V6(gateway),

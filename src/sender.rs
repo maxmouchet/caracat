@@ -63,7 +63,6 @@ impl Sender {
         if l2_protocol == L2::Ethernet {
             src_mac = get_mac_address(interface).context("Ethernet device has no MAC address")?;
             let table = RoutingTable::from_native()?;
-            println!("{:?}", table);
             // TODO: Warn if no v4 or v6 dst MAC.
             dst_mac_v4 = table
                 .default_route_v4()
