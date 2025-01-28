@@ -91,11 +91,10 @@ struct Args {
 }
 
 fn main() -> Result<()> {
-    // This uses a lower-level interface than caracat::easy used by the caracal and yarrp examples.
     let args = Args::parse();
 
     let instance_id = thread_rng().gen_range(0..u16::MAX);
-    let mut sender = Sender::new(&args.device, instance_id, false)?;
+    let mut sender = Sender::new(&args.device, None, None, instance_id, false)?;
     let mut receiver = Receiver::new_interactive(&args.device, (args.wait * 1000.0) as i32)?;
 
     let mut irr = if args.as_path_lookups {

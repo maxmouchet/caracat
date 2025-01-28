@@ -3,6 +3,7 @@ use caracat::parser::parse;
 use pcap::{Capture, Error};
 use std::net::IpAddr;
 use std::str::FromStr;
+use std::time::Duration;
 
 fn parse_file(path: &str) -> Vec<Reply> {
     let mut replies = Vec::new();
@@ -29,7 +30,10 @@ fn test_icmp_icmp_ttl_exceeded() {
     assert_eq!(replies.len(), 1);
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1613155623845580);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1613155623845580)
+    );
     assert_eq!(
         reply.reply_src_addr,
         IpAddr::from_str("72.14.204.68").unwrap()
@@ -44,6 +48,10 @@ fn test_icmp_icmp_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 11);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("192.168.1.5").unwrap()
+    );
     assert_eq!(reply.probe_dst_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(reply.probe_size, 36);
     assert_eq!(reply.probe_ttl, 6);
@@ -77,7 +85,10 @@ fn test_icmp_icmp_ttl_exceeded_mpls() {
     };
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1638522471773669);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1638522471773669)
+    );
     assert_eq!(
         reply.reply_src_addr,
         IpAddr::from_str("12.122.28.42").unwrap()
@@ -95,6 +106,10 @@ fn test_icmp_icmp_ttl_exceeded_mpls() {
     // assert_eq!(reply.reply_mpls_labels.len(), 2);
     // assert_eq!(reply.reply_mpls_labels[0], label_1);
     // assert_eq!(reply.reply_mpls_labels[1], label_2);
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("132.227.123.8").unwrap()
+    );
     assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("65.83.239.127").unwrap()
@@ -120,7 +135,10 @@ fn test_icmp_icmp_echo_reply() {
     assert_eq!(replies.len(), 1);
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1613155697130290);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1613155697130290)
+    );
     assert_eq!(reply.reply_src_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(
         reply.reply_dst_addr,
@@ -132,6 +150,10 @@ fn test_icmp_icmp_echo_reply() {
     assert_eq!(reply.reply_icmp_type, 0);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("192.168.1.5").unwrap()
+    );
     assert_eq!(reply.probe_dst_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(reply.probe_size, 0);
     assert_eq!(reply.probe_ttl, 10);
@@ -151,7 +173,10 @@ fn test_icmp6_icmp6_ttl_exceeded() {
     assert_eq!(replies.len(), 1);
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1615987564867543);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1615987564867543)
+    );
     assert_eq!(
         reply.reply_src_addr,
         IpAddr::from_str("2a04:8ec0:0:a::1:119").unwrap()
@@ -166,6 +191,10 @@ fn test_icmp6_icmp6_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 3);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap()
+    );
     assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()
@@ -188,7 +217,10 @@ fn test_icmp6_icmp6_echo_reply() {
     assert_eq!(replies.len(), 1);
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1615987338565191);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1615987338565191)
+    );
     assert_eq!(
         reply.reply_src_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()
@@ -203,6 +235,10 @@ fn test_icmp6_icmp6_echo_reply() {
     assert_eq!(reply.reply_icmp_type, 129);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap()
+    );
     assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()
@@ -225,7 +261,10 @@ fn test_udp_icmp_ttl_exceeded() {
     assert_eq!(replies.len(), 1);
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1613155487934429);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1613155487934429)
+    );
     assert_eq!(
         reply.reply_src_addr,
         IpAddr::from_str("72.14.204.68").unwrap()
@@ -240,6 +279,10 @@ fn test_udp_icmp_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 11);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("192.168.1.5").unwrap()
+    );
     assert_eq!(reply.probe_dst_addr, IpAddr::from_str("8.8.8.8").unwrap());
     assert_eq!(reply.probe_size, 36);
     assert_eq!(reply.probe_ttl, 6);
@@ -259,7 +302,10 @@ fn test_udp_icmp6_ttl_exceeded() {
     assert_eq!(replies.len(), 1);
 
     let reply = &replies[0];
-    assert_eq!(reply.capture_timestamp, 1615987632702320);
+    assert_eq!(
+        reply.capture_timestamp,
+        Duration::from_micros(1615987632702320)
+    );
     assert_eq!(
         reply.reply_src_addr,
         IpAddr::from_str("2a04:8ec0:0:a::1:119").unwrap()
@@ -274,6 +320,10 @@ fn test_udp_icmp6_ttl_exceeded() {
     assert_eq!(reply.reply_icmp_type, 3);
     assert_eq!(reply.reply_icmp_code, 0);
     assert!(reply.reply_mpls_labels.is_empty());
+    assert_eq!(
+        reply.probe_src_addr,
+        IpAddr::from_str("2a04:8ec0:0:164:620c:e59a:daf8:21e9").unwrap()
+    );
     assert_eq!(
         reply.probe_dst_addr,
         IpAddr::from_str("2001:4860:4860::8888").unwrap()

@@ -13,10 +13,8 @@ Versions > 1.0.0 might break this compatibility to fix some idiosyncrasies inher
 Multiple example binaries are provided:
 ```bash
 # Traceroute tool
-cargo run --example traceoute -- --help
-# Implementation of caracal command-line interface
-cargo run --example caracal -- --help
-# (Partial) implementation of yarrp
+cargo run --example traceroute -- --help
+# Implementation of yarrp
 cargo run --example yarrp -- --help
 ```
 

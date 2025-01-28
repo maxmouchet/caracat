@@ -1,13 +1,10 @@
 //! Limit the rate at which packets are sent.
 use std::cmp::max;
-use std::fmt::{Display, Formatter};
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-use strum::EnumString;
 
 use circular_queue::CircularQueue;
-use strum::Display;
 
 /// A rate limiter to send packets at a precise rate.
 pub struct RateLimiter {
@@ -145,19 +142,7 @@ impl RateLimiterStatistics {
     }
 }
 
-impl Display for RateLimiterStatistics {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "average_rate={:.0}", self.average_rate())?;
-        write!(
-            f,
-            " average_utilization={:.0}",
-            self.average_utilization() * 100.0
-        )
-    }
-}
-
-#[derive(Copy, Clone, Debug, Display, EnumString, PartialEq)]
-#[strum(serialize_all = "lowercase")]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum RateLimitingMethod {
     Auto,
     Active,

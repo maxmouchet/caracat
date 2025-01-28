@@ -23,7 +23,7 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
     );
 
     let mut reply = Reply {
-        capture_timestamp: capture_timestamp.as_micros() as u64,
+        capture_timestamp,
         ..Default::default()
     };
 
@@ -97,12 +97,13 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                             parse_inner_icmp(&mut reply, &echo, capture_timestamp);
                             parse_inner_ttl_ipv4(&mut reply, &ip);
                             // Since there is no quoted ICMP header in an echo reply, we cannot retrieve
-                            // the *true* probe destination address. In previous versions of caracat,
-                            // we used to leave the `probe_dst_addr` field empty to indicate this.
+                            // the *true* probe source and destination address.
+                            // In previous versions of caracat, we used to leave the `probe_dst_addr` field
+                            // empty to indicate this.
                             // However, this complicates downstream code, and in the vast majority of
                             // the cases, the reply comes from the probe destination.
-                            // Users can still filter-out echo replies if they fear to infer false
-                            // links.
+                            // Users can still filter-out echo replies if they fear to infer false links.
+                            reply.probe_src_addr = reply.reply_dst_addr;
                             reply.probe_dst_addr = reply.reply_src_addr;
                         }
                         other => bail!("Unsupported ICMP message type: {:?}", other),
@@ -179,6 +180,7 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                             parse_inner_icmpv6(&mut reply, &echo, capture_timestamp);
                             parse_inner_ttl_ipv6(&mut reply, &ip);
                             // Same remark as for ICMP(v4) echo replies.
+                            reply.probe_src_addr = reply.reply_dst_addr;
                             reply.probe_dst_addr = reply.reply_src_addr;
                         }
                         other => bail!("Unsupported ICMP message type: {:?}", other),
@@ -223,6 +225,7 @@ fn parse_outer_icmpv6(reply: &mut Reply, icmp: &Icmpv6Packet) {
 }
 
 fn parse_inner_ipv4(reply: &mut Reply, ip: &Ipv4Packet) {
+    reply.probe_src_addr = IpAddr::V4(ip.get_source());
     reply.probe_dst_addr = IpAddr::V4(ip.get_destination());
     reply.probe_id = ip.get_identification();
     reply.probe_size = ip.get_total_length();
@@ -230,6 +233,7 @@ fn parse_inner_ipv4(reply: &mut Reply, ip: &Ipv4Packet) {
 }
 
 fn parse_inner_ipv6(reply: &mut Reply, ip: &Ipv6Packet) {
+    reply.probe_src_addr = IpAddr::V6(ip.get_source());
     reply.probe_dst_addr = IpAddr::V6(ip.get_destination());
     reply.probe_id = 0; // Not implemented for IPv6.
     reply.probe_size = ip.get_payload_length();
