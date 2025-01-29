@@ -62,7 +62,12 @@ pub fn get_ipv6_address(interface: &str) -> Option<Ipv6Addr> {
     // Prefer Internet-routable addresses over loopback over private over link-local.
     // TODO: Temporary hack to prefer GUAs over other kind of addresses.
     //       The proper solution below requires Rust nightly.
-    addresses.sort_by_key(|addr| addr.octets()[0] & 0b11100000 == 0b00100000);
+    addresses.sort_by_key(|addr| {
+        (
+            addr.octets()[0] & 0b11100000 == 0b00100000, // GUA (2000::/3)
+            addr.octets()[0] & 0b11111110 == 0b11111100, // ULA (fc00::/7)
+        )
+    });
     // addresses.sort_by_key(|addr| {
     //     (
     //         addr.is_global(),
