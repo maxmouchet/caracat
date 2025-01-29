@@ -91,6 +91,7 @@ struct Args {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
     let args = Args::parse();
 
     let instance_id = thread_rng().gen_range(0..u16::MAX);
