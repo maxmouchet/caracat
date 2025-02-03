@@ -1,5 +1,6 @@
 use std::fmt::{Debug, Formatter};
-use std::fs;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::process::Command;
 use std::str::FromStr;
@@ -55,16 +56,21 @@ impl RoutingTable {
 
     /// Build a routing table by parsing procfs on Linux.
     pub fn from_procfs(ipv4_path: &str, ipv6_path: &str) -> Result<Self> {
-        let output_v4 = fs::read_to_string(ipv4_path)?;
-        let output_v6 = fs::read_to_string(ipv6_path)?;
+        let file_v4 = File::open(ipv4_path)?;
+        let file_v6 = File::open(ipv6_path)?;
+        let reader_v4 = BufReader::new(file_v4);
+        let reader_v6 = BufReader::new(file_v6);
         // Quick fix to prevent large loading time with large routing tables (e.g. full view).
-        let routes_v4 = output_v4
+        // TODO: Use a better solution, like a netlink socket?
+        let routes_v4 = reader_v4
             .lines()
-            .flat_map(Route::from_procfs_entry_v4)
+            .map_while(Result::ok)
+            .flat_map(|line| Route::from_procfs_entry_v4(&line))
             .take(1024);
-        let routes_v6 = output_v6
+        let routes_v6 = reader_v6
             .lines()
-            .flat_map(Route::from_procfs_entry_v6)
+            .map_while(Result::ok)
+            .flat_map(|line| Route::from_procfs_entry_v6(&line))
             .take(1024);
         let routes: Vec<Route> = routes_v4.chain(routes_v6).collect();
         Ok(RoutingTable::new(routes))
