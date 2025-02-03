@@ -54,6 +54,8 @@ impl Receiver {
     }
 
     pub fn new_interactive(interface: &str, timeout_ms: i32) -> Result<Self> {
+        // TODO: Using pcap timeout for interactive mode is not the right solution,
+        // as the behaviour is platform-dependent. This is specifically called out in the pcap man.
         Self::new(interface, 1024 * 1024, timeout_ms, true)
     }
 
