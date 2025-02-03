@@ -57,8 +57,15 @@ impl RoutingTable {
     pub fn from_procfs(ipv4_path: &str, ipv6_path: &str) -> Result<Self> {
         let output_v4 = fs::read_to_string(ipv4_path)?;
         let output_v6 = fs::read_to_string(ipv6_path)?;
-        let routes_v4 = output_v4.lines().flat_map(Route::from_procfs_entry_v4);
-        let routes_v6 = output_v6.lines().flat_map(Route::from_procfs_entry_v6);
+        // Quick fix to prevent large loading time with large routing tables (e.g. full view).
+        let routes_v4 = output_v4
+            .lines()
+            .flat_map(Route::from_procfs_entry_v4)
+            .take(1024);
+        let routes_v6 = output_v6
+            .lines()
+            .flat_map(Route::from_procfs_entry_v6)
+            .take(1024);
         let routes: Vec<Route> = routes_v4.chain(routes_v6).collect();
         Ok(RoutingTable::new(routes))
     }
