@@ -61,6 +61,9 @@ struct Args {
     /// Use ICMP ECHO for tracerouting.
     #[arg(short = 'I', long = "icmp", default_value_t = false)]
     icmp: bool,
+    /// Use TCP SYN for tracerouting.
+    #[arg(short = 'T', long = "tcp", default_value_t = false)]
+    tcp: bool,
     /// Specify a network interface to operate with.
     #[arg(short = 'i', long = "interface", default_value_t = get_default_interface())]
     device: String,
@@ -122,6 +125,8 @@ fn main() -> Result<()> {
             IpAddr::V4(_) => protocol = L4::ICMP,
             IpAddr::V6(_) => protocol = L4::ICMPv6,
         }
+    } else if args.tcp {
+        protocol = L4::TCP;
     }
 
     // TODO: Packet size
