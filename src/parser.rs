@@ -10,6 +10,7 @@ use pnet::packet::icmpv6::Icmpv6Packet;
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::ipv6::Ipv6Packet;
+use pnet::packet::tcp::TcpPacket;
 use pnet::packet::udp::UdpPacket;
 use pnet::packet::{icmp, icmpv6, Packet as _};
 
@@ -85,6 +86,12 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                                         .context("Cannot build inner UDP header")?;
                                     parse_inner_udp(&mut reply, &inner_udp, capture_timestamp);
                                 }
+                                IpNextHeaderProtocols::Tcp => {
+                                    // IPv4 → ICMP (DE/TE) → IPv4 → TCP
+                                    let inner_tcp = TcpPacket::new(inner_ip.payload())
+                                        .context("Cannot build inner TCP header")?;
+                                    parse_inner_tcp(&mut reply, &inner_tcp, capture_timestamp);
+                                }
                                 other => bail!("Unsupported inner L4 protocol: {:?}", other),
                             }
                         }
@@ -108,6 +115,16 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                         }
                         other => bail!("Unsupported ICMP message type: {:?}", other),
                     }
+                }
+                IpNextHeaderProtocols::Tcp => {
+                    // IPv4 → TCP (SYN-ACK or RST)
+                    let tcp = TcpPacket::new(ip.payload()).context("Cannot build TCP header")?;
+                    parse_tcp_reply(&mut reply, &tcp, capture_timestamp);
+                    // For TCP replies, we can retrieve the TTL from the IP header
+                    reply.probe_ttl = ip.get_identification() as u8;
+                    // Set probe addresses from the reply
+                    reply.probe_src_addr = reply.reply_dst_addr;
+                    reply.probe_dst_addr = reply.reply_src_addr;
                 }
                 other => bail!("Unsupported L4 protocol: {:?}", other),
             }
@@ -168,6 +185,12 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                                         .context("Cannot build inner UDP header")?;
                                     parse_inner_udp(&mut reply, &inner_udp, capture_timestamp);
                                 }
+                                IpNextHeaderProtocols::Tcp => {
+                                    // IPv6 → ICMPv6 (DE/TE) → IPv6 → TCP
+                                    let inner_tcp = TcpPacket::new(inner_ip.payload())
+                                        .context("Cannot build inner TCP header")?;
+                                    parse_inner_tcp(&mut reply, &inner_tcp, capture_timestamp);
+                                }
                                 other => bail!("Unsupported inner L4 protocol: {:?}", other),
                             }
                         }
@@ -185,6 +208,18 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                         }
                         other => bail!("Unsupported ICMP message type: {:?}", other),
                     }
+                }
+                IpNextHeaderProtocols::Tcp => {
+                    // IPv6 → TCP (SYN-ACK or RST)
+                    let tcp = TcpPacket::new(ip.payload()).context("Cannot build TCP header")?;
+                    parse_tcp_reply(&mut reply, &tcp, capture_timestamp);
+                    // For IPv6 TCP replies, retrieve TTL from payload length
+                    // Note: For direct TCP replies (not ICMP errors), we can't easily retrieve the original TTL
+                    // We use 0 as a marker that TTL is not available
+                    reply.probe_ttl = 0;
+                    // Set probe addresses from the reply
+                    reply.probe_src_addr = reply.reply_dst_addr;
+                    reply.probe_dst_addr = reply.reply_src_addr;
                 }
                 other => bail!("Unsupported L4 protocol: {:?}", other),
             }
@@ -274,6 +309,29 @@ fn parse_inner_udp(reply: &mut Reply, udp: &UdpPacket, timestamp: Duration) {
         reply.probe_ttl = (udp.get_length() - offset) as u8;
     }
     reply.rtt = difference(tenth_ms(timestamp), udp.get_checksum());
+}
+
+/// Parse TCP header embedded in ICMP error messages.
+fn parse_inner_tcp(reply: &mut Reply, tcp: &TcpPacket, timestamp: Duration) {
+    reply.probe_protocol = IpNextHeaderProtocols::Tcp.0;
+    reply.probe_src_port = tcp.get_source();
+    reply.probe_dst_port = tcp.get_destination();
+    // For TCP in ICMP errors, the sequence number is the original probe sequence number
+    let sequence = tcp.get_sequence();
+    reply.rtt = difference(tenth_ms(timestamp), (sequence & 0xFFFF) as u16);
+}
+
+/// Parse direct TCP replies (SYN-ACK or RST).
+fn parse_tcp_reply(reply: &mut Reply, tcp: &TcpPacket, timestamp: Duration) {
+    reply.probe_protocol = IpNextHeaderProtocols::Tcp.0;
+    // For direct TCP replies, ports are reversed
+    reply.probe_src_port = tcp.get_destination();
+    reply.probe_dst_port = tcp.get_source();
+    // For TCP SYN-ACK, the ACK number is our original sequence number + 1
+    // For TCP RST, we might need to handle differently, but ACK - 1 should work in most cases
+    let ack = tcp.get_acknowledgement();
+    let original_sequence = if ack > 0 { ack - 1 } else { 0 };
+    reply.rtt = difference(tenth_ms(timestamp), (original_sequence & 0xFFFF) as u16);
 }
 
 /// Retrieve the TTL embedded in the IP packet length for ICMP probes.

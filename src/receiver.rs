@@ -28,7 +28,7 @@ impl Receiver {
             .open()?;
 
         // Filter as much as possible at the kernel level.
-        // We're only interested in incoming ICMP packets.
+        // We're interested in incoming ICMP packets and TCP packets (SYN-ACK, RST).
         cap.direction(Direction::In)?;
         cap.filter(
             "(ip and icmp and (
@@ -39,7 +39,9 @@ impl Receiver {
                     (ip6 and icmp6 and (
                     icmp6[icmp6type] = icmp6-echoreply or
                     icmp6[icmp6type] = icmp6-timeexceeded or
-                    icmp6[icmp6type] = icmp6-destinationunreach))",
+                    icmp6[icmp6type] = icmp6-destinationunreach))
+                    or
+                    (tcp and (tcp[tcpflags] & (tcp-syn|tcp-rst) != 0))",
             true,
         )?;
 

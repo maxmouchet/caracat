@@ -3,6 +3,7 @@ use std::mem::size_of;
 use pnet::packet::ethernet::EthernetPacket;
 use pnet::packet::ipv4::Ipv4Packet;
 use pnet::packet::ipv6::Ipv6Packet;
+use pnet::packet::tcp::TcpPacket;
 use pnet::packet::udp::UdpPacket;
 
 use crate::models::{L2, L3, L4};
@@ -75,6 +76,7 @@ impl Packet<'_> {
             L4::ICMP => 8,
             L4::ICMPv6 => 8,
             L4::UDP => UdpPacket::minimum_packet_size(),
+            L4::TCP => TcpPacket::minimum_packet_size(),
         };
 
         let l2_start = padding;

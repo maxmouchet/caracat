@@ -8,8 +8,8 @@ use pcap::{Active, Capture, Linktype};
 use pnet::util::MacAddr;
 
 use crate::builder::{
-    build_ethernet, build_icmp, build_icmpv6, build_ipv4, build_ipv6, build_loopback, build_udp,
-    Packet,
+    build_ethernet, build_icmp, build_icmpv6, build_ipv4, build_ipv6, build_loopback, build_tcp,
+    build_udp, Packet,
 };
 use crate::models::{Probe, L2, L4};
 use crate::neighbors::{resolve_mac_address, RoutingTable};
@@ -114,7 +114,11 @@ impl Sender {
 
         // TODO: PAYLOAD_TWEAK_BYTES constant
         // TODO: ICMP_HEADER_SIZE constant
-        let payload_size = probe.ttl as usize + 2;
+        // TCP probes don't need a payload; for other protocols we encode the TTL in the payload
+        let payload_size = match l4_protocol {
+            L4::TCP => 0,
+            _ => probe.ttl as usize + 2,
+        };
         let mut packet = Packet::new(
             &mut self.buffer,
             self.l2_protocol,
@@ -148,6 +152,7 @@ impl Sender {
             L4::ICMP => build_icmp(&mut packet, probe.src_port, timestamp_enc),
             L4::ICMPv6 => build_icmpv6(&mut packet, probe.src_port, timestamp_enc),
             L4::UDP => build_udp(&mut packet, timestamp_enc, probe.src_port, probe.dst_port),
+            L4::TCP => build_tcp(&mut packet, probe.src_port, probe.dst_port, timestamp_enc as u32),
         }
 
         if !self.dry_run {

@@ -35,6 +35,7 @@ pub enum L4 {
     ICMP,
     ICMPv6,
     UDP,
+    TCP,
 }
 
 impl From<L4> for u8 {
@@ -50,6 +51,7 @@ impl From<L4> for IpNextHeaderProtocol {
             L4::ICMP => IpNextHeaderProtocols::Icmp,
             L4::ICMPv6 => IpNextHeaderProtocols::Icmpv6,
             L4::UDP => IpNextHeaderProtocols::Udp,
+            L4::TCP => IpNextHeaderProtocols::Tcp,
         }
     }
 }

@@ -5,6 +5,7 @@ use pnet::datalink::MacAddr;
 use pnet::packet::ethernet::MutableEthernetPacket;
 use pnet::packet::ipv4::{Ipv4Packet, MutableIpv4Packet};
 use pnet::packet::ipv6::{Ipv6Packet, MutableIpv6Packet};
+use pnet::packet::tcp::MutableTcpPacket;
 use pnet::packet::udp::MutableUdpPacket;
 use pnet::packet::{icmp, icmpv6, Packet as _};
 use pnet::util;
@@ -144,6 +145,34 @@ pub fn build_udp(packet: &mut Packet, target_checksum: u16, src_port: u16, dst_p
         .payload_mut()
         .write_all(&payload_for_checksum(original_checksum, target_checksum).to_be_bytes())
         .unwrap();
+}
+
+/// Build the TCP SYN header.
+///
+/// In the TCP header, the source and destination ports are used for per-flow
+/// load-balancing. We use those for encoding the flow ID, and we encode the
+/// timestamp in the sequence number.
+/// We set the SYN flag and use a fixed window size. The checksum is computed
+/// properly to ensure the packet is valid.
+pub fn build_tcp(packet: &mut Packet, src_port: u16, dst_port: u16, sequence: u32) {
+    {
+        let mut tcp = MutableTcpPacket::new(packet.l4_mut()).unwrap();
+        tcp.set_source(src_port);
+        tcp.set_destination(dst_port);
+        tcp.set_sequence(sequence);
+        tcp.set_acknowledgement(0);
+        tcp.set_data_offset(5); // 5 * 4 = 20 bytes (no options)
+        tcp.set_flags(0x02); // SYN flag
+        tcp.set_window(64240); // Standard window size
+        tcp.set_urgent_ptr(0);
+        tcp.set_checksum(0); // Set to 0 before computing
+    }
+    // Compute proper checksum after releasing the mutable borrow
+    let checksum = transport_checksum(packet, 8);
+    {
+        let mut tcp = MutableTcpPacket::new(packet.l4_mut()).unwrap();
+        tcp.set_checksum(checksum);
+    }
 }
 
 /// Return the two bytes of the payload to ensure that the target checksum is valid.
