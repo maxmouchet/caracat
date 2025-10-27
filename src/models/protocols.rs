@@ -1,6 +1,5 @@
 use pnet::packet::ethernet::{EtherType, EtherTypes};
 use pnet::packet::ip::{IpNextHeaderProtocol, IpNextHeaderProtocols};
-use serde::{Deserialize, Serialize};
 
 /// Layer 2 protocol.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -30,7 +29,7 @@ impl From<L3> for EtherType {
 }
 
 /// Layer 4 protocol.
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum L4 {
     ICMP,
     ICMPv6,
