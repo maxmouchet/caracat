@@ -62,16 +62,6 @@ impl Receiver {
         Self::new(interface, 1024 * 1024, 50, true)
     }
 
-    pub fn next_reply(&mut self) -> Result<Reply> {
-        match self.cap.next_packet() {
-            Ok(packet) => match parse(&packet, self.linktype) {
-                Ok(reply) => Ok(reply),
-                Err(error) => Err(anyhow!(error)),
-            },
-            Err(error) => Err(anyhow!(error)),
-        }
-    }
-
     /// Wait for the next reply with a custom timeout.
     ///
     /// This method implements a reliable timeout mechanism that works across all
@@ -79,7 +69,7 @@ impl Receiver {
     /// checking the total elapsed time. Unlike pcap's built-in timeout (which only
     /// triggers after at least one packet is received), this will return an error
     /// if no packet is received within the specified duration.
-    pub fn next_reply_timeout(&mut self, timeout: Duration) -> Result<Reply> {
+    pub fn next_reply(&mut self, timeout: Duration) -> Result<Reply> {
         let start = Instant::now();
         let poll_interval = Duration::from_millis(50);
 

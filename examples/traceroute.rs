@@ -142,7 +142,7 @@ fn main() -> Result<()> {
         };
         sender.send(&probe).unwrap();
 
-        match receiver.next_reply_timeout(timeout) {
+        match receiver.next_reply(timeout) {
             Ok(reply) => {
                 if !reply.is_valid(instance_id) || reply.probe_dst_addr != addr {
                     continue;
@@ -170,10 +170,7 @@ fn main() -> Result<()> {
                     break;
                 }
             }
-            Err(_) => {
-                // Print a line indicating no reply received for this hop
-                println!("{:>2}  * * *", ttl);
-            }
+            Err(_) => {}
         }
     }
 

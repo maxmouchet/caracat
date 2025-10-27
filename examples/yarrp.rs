@@ -287,7 +287,7 @@ fn main() -> Result<()> {
     let stopped_thr = stopped.clone();
 
     let receive_loop = thread::spawn(move || loop {
-        let result = receiver.next_reply();
+        let result = receiver.next_reply(Duration::from_secs(1));
         match result {
             Ok(reply) => {
                 // https://github.com/cmand/yarrp/blob/master/icmp.cpp#L344
