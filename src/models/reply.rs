@@ -3,12 +3,11 @@ use std::time::Duration;
 
 use pnet::packet::ip::IpNextHeaderProtocols;
 use pnet::packet::{icmp, icmpv6};
-use serde::Serialize;
 
 use crate::checksum::caracat_checksum;
 
 /// An MPLS label.
-#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct MPLSLabel {
     /// This 20-bit field carries the actual value of the label.
     pub label: u32,
@@ -23,7 +22,7 @@ pub struct MPLSLabel {
 }
 
 /// A reply to a probe packet.
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct Reply {
     // * Capture attributes *
     /// The capture timestamp.

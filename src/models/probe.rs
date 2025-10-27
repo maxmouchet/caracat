@@ -1,12 +1,10 @@
 use std::net::IpAddr;
 
-use serde::{Deserialize, Serialize};
-
 use crate::checksum::caracat_checksum;
 use crate::models::protocols::{L3, L4};
 
 /// The specification for a probe packet.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
 pub struct Probe {
     pub dst_addr: IpAddr,
     pub src_port: u16,
