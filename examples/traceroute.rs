@@ -10,6 +10,7 @@ use caracat::sender::Sender;
 use caracat::utilities::get_default_interface;
 use dns_lookup::{lookup_addr, lookup_host};
 use rand::{thread_rng, Rng};
+use std::time::Duration;
 
 use irrc::{Connection, IrrClient, Query};
 use lazy_static::lazy_static;
@@ -96,7 +97,8 @@ fn main() -> Result<()> {
 
     let instance_id = thread_rng().gen_range(0..u16::MAX);
     let mut sender = Sender::new(&args.device, None, None, instance_id, false)?;
-    let mut receiver = Receiver::new_interactive(&args.device, (args.wait * 1000.0) as i32)?;
+    let mut receiver = Receiver::new_interactive(&args.device)?;
+    let timeout = Duration::from_secs_f64(args.wait);
 
     let mut irr = if args.as_path_lookups {
         IrrClient::new("whois.radb.net:43").connect().ok()
@@ -140,7 +142,7 @@ fn main() -> Result<()> {
         };
         sender.send(&probe).unwrap();
 
-        match receiver.next_reply() {
+        match receiver.next_reply_timeout(timeout) {
             Ok(reply) => {
                 if !reply.is_valid(instance_id) || reply.probe_dst_addr != addr {
                     continue;
@@ -168,7 +170,10 @@ fn main() -> Result<()> {
                     break;
                 }
             }
-            Err(_) => {}
+            Err(_) => {
+                // Print a line indicating no reply received for this hop
+                println!("{:>2}  * * *", ttl);
+            }
         }
     }
 

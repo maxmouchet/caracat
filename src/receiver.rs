@@ -2,6 +2,7 @@ use crate::models::Reply;
 use crate::parser::parse;
 use anyhow::{anyhow, Context, Result};
 use pcap::{Active, Capture, Direction, Linktype, Stat};
+use std::time::{Duration, Instant};
 
 pub struct Receiver {
     cap: Capture<Active>,
@@ -53,10 +54,12 @@ impl Receiver {
         Self::new(interface, 64 * 1024 * 1024, 100, false)
     }
 
-    pub fn new_interactive(interface: &str, timeout_ms: i32) -> Result<Self> {
-        // TODO: Using pcap timeout for interactive mode is not the right solution,
-        // as the behaviour is platform-dependent. This is specifically called out in the pcap man.
-        Self::new(interface, 1024 * 1024, timeout_ms, true)
+    pub fn new_interactive(interface: &str) -> Result<Self> {
+        // In interactive mode, we use a short pcap timeout with polling
+        // to implement reliable timeouts. The pcap timeout is set to 50ms
+        // so that next_packet() doesn't block for too long, allowing us to
+        // check our application-level timeout frequently.
+        Self::new(interface, 1024 * 1024, 50, true)
     }
 
     pub fn next_reply(&mut self) -> Result<Reply> {
@@ -66,6 +69,42 @@ impl Receiver {
                 Err(error) => Err(anyhow!(error)),
             },
             Err(error) => Err(anyhow!(error)),
+        }
+    }
+
+    /// Wait for the next reply with a custom timeout.
+    ///
+    /// This method implements a reliable timeout mechanism that works across all
+    /// platforms by repeatedly polling for packets with a short pcap timeout and
+    /// checking the total elapsed time. Unlike pcap's built-in timeout (which only
+    /// triggers after at least one packet is received), this will return an error
+    /// if no packet is received within the specified duration.
+    pub fn next_reply_timeout(&mut self, timeout: Duration) -> Result<Reply> {
+        let start = Instant::now();
+        let poll_interval = Duration::from_millis(50);
+
+        loop {
+            match self.cap.next_packet() {
+                Ok(packet) => {
+                    // Successfully got a packet, parse it
+                    return match parse(&packet, self.linktype) {
+                        Ok(reply) => Ok(reply),
+                        Err(error) => Err(anyhow!(error)),
+                    };
+                }
+                Err(pcap::Error::TimeoutExpired) | Err(pcap::Error::NoMorePackets) => {
+                    // No packet available yet, check if we've exceeded our timeout
+                    if start.elapsed() >= timeout {
+                        return Err(anyhow!("timeout waiting for reply"));
+                    }
+                    // Sleep briefly to avoid busy-waiting
+                    std::thread::sleep(poll_interval);
+                }
+                Err(error) => {
+                    // Some other error occurred
+                    return Err(anyhow!(error));
+                }
+            }
         }
     }
 
