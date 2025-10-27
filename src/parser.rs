@@ -120,8 +120,6 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                     // IPv4 → TCP (SYN-ACK or RST)
                     let tcp = TcpPacket::new(ip.payload()).context("Cannot build TCP header")?;
                     parse_tcp_reply(&mut reply, &tcp, capture_timestamp);
-                    // For TCP replies, we can retrieve the TTL from the IP header
-                    reply.probe_ttl = ip.get_identification() as u8;
                     // Set probe addresses from the reply
                     reply.probe_src_addr = reply.reply_dst_addr;
                     reply.probe_dst_addr = reply.reply_src_addr;
@@ -213,10 +211,6 @@ pub fn parse(packet: &Packet, linktype: Linktype) -> Result<Reply> {
                     // IPv6 → TCP (SYN-ACK or RST)
                     let tcp = TcpPacket::new(ip.payload()).context("Cannot build TCP header")?;
                     parse_tcp_reply(&mut reply, &tcp, capture_timestamp);
-                    // For IPv6 TCP replies, retrieve TTL from payload length
-                    // Note: For direct TCP replies (not ICMP errors), we can't easily retrieve the original TTL
-                    // We use 0 as a marker that TTL is not available
-                    reply.probe_ttl = 0;
                     // Set probe addresses from the reply
                     reply.probe_src_addr = reply.reply_dst_addr;
                     reply.probe_dst_addr = reply.reply_src_addr;
@@ -316,9 +310,10 @@ fn parse_inner_tcp(reply: &mut Reply, tcp: &TcpPacket, timestamp: Duration) {
     reply.probe_protocol = IpNextHeaderProtocols::Tcp.0;
     reply.probe_src_port = tcp.get_source();
     reply.probe_dst_port = tcp.get_destination();
-    // For TCP in ICMP errors, the sequence number is the original probe sequence number
+    // For TCP in ICMP errors, the sequence number contains both timestamp and TTL
     let sequence = tcp.get_sequence();
     reply.rtt = difference(tenth_ms(timestamp), (sequence & 0xFFFF) as u16);
+    reply.probe_ttl = ((sequence >> 16) & 0xFF) as u8;
 }
 
 /// Parse direct TCP replies (SYN-ACK or RST).
@@ -332,6 +327,7 @@ fn parse_tcp_reply(reply: &mut Reply, tcp: &TcpPacket, timestamp: Duration) {
     let ack = tcp.get_acknowledgement();
     let original_sequence = if ack > 0 { ack - 1 } else { 0 };
     reply.rtt = difference(tenth_ms(timestamp), (original_sequence & 0xFFFF) as u16);
+    reply.probe_ttl = ((original_sequence >> 16) & 0xFF) as u8;
 }
 
 /// Retrieve the TTL embedded in the IP packet length for ICMP probes.

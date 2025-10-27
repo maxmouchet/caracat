@@ -150,8 +150,9 @@ pub fn build_udp(packet: &mut Packet, target_checksum: u16, src_port: u16, dst_p
 /// Build the TCP SYN header.
 ///
 /// In the TCP header, the source and destination ports are used for per-flow
-/// load-balancing. We use those for encoding the flow ID, and we encode the
-/// timestamp in the sequence number.
+/// load-balancing. We encode both the timestamp (lower 16 bits) and TTL
+/// (bits 16-23) in the sequence number, since TCP probes don't have a payload
+/// to encode the TTL like UDP/ICMP do.
 /// We set the SYN flag and use a fixed window size. The checksum is computed
 /// properly to ensure the packet is valid.
 pub fn build_tcp(packet: &mut Packet, src_port: u16, dst_port: u16, sequence: u32) {

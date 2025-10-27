@@ -152,7 +152,11 @@ impl Sender {
             L4::ICMP => build_icmp(&mut packet, probe.src_port, timestamp_enc),
             L4::ICMPv6 => build_icmpv6(&mut packet, probe.src_port, timestamp_enc),
             L4::UDP => build_udp(&mut packet, timestamp_enc, probe.src_port, probe.dst_port),
-            L4::TCP => build_tcp(&mut packet, probe.src_port, probe.dst_port, timestamp_enc as u32),
+            L4::TCP => {
+                // Encode both timestamp (lower 16 bits) and TTL (bits 16-23) in sequence number
+                let sequence = (timestamp_enc as u32) | ((probe.ttl as u32) << 16);
+                build_tcp(&mut packet, probe.src_port, probe.dst_port, sequence)
+            }
         }
 
         if !self.dry_run {
