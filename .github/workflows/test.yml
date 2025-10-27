@@ -23,11 +23,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - name: Install WinPcap
-        run: |
-          Invoke-WebRequest -Uri "https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip" -OutFile "$Env:TEMP\WpdPack.zip"
-          Expand-Archive -Path "$Env:TEMP\WpdPack.zip" -DestinationPath "$Env:TEMP"
-          New-Item -ItemType Directory -Force -Path "${env:GITHUB_WORKSPACE}\lib"
-          Copy-Item -Path "$Env:TEMP\WpdPack\Lib\*" -Destination "${env:GITHUB_WORKSPACE}\lib" -Recurse
-        shell: pwsh
+      - run: |
+          Invoke-WebRequest -UseBasicParsing https://www.winpcap.org/install/bin/WpdPack_4_1_2.zip -OutFile "${Env:TEMP}\wpd.zip"
+          Expand-Archive -LiteralPath "${Env:TEMP}\wpd.zip" -DestinationPath "${Env:TEMP}\wpd"
+          Move-Item -LiteralPath "${Env:TEMP}\wpd\WpdPack\Lib" -Destination lib
       - run: cargo test
+
