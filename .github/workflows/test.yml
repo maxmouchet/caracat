@@ -20,8 +20,6 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    env:
-      RUST_TEST_THREADS: 1
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
@@ -31,8 +29,5 @@ jobs:
           Expand-Archive -Path "$Env:TEMP\WpdPack.zip" -DestinationPath "$Env:TEMP"
           New-Item -ItemType Directory -Force -Path "${env:GITHUB_WORKSPACE}\lib"
           Copy-Item -Path "$Env:TEMP\WpdPack\Lib\*" -Destination "${env:GITHUB_WORKSPACE}\lib" -Recurse
-        shell: pwsh
-      - name: Set LIB environment variable
-        run: echo "LIB=${env:GITHUB_WORKSPACE}\lib\x64;$env:LIB" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         shell: pwsh
       - run: cargo test
